@@ -45,6 +45,28 @@ async def enabled_profile_scopes(connection: AsyncConnection, scope_ids: tuple[s
     return frozenset(rows)
 
 
+async def source_count_scopes(
+    connection: AsyncConnection,
+    scope_ids: tuple[str, ...],
+    *,
+    binding_name: str,
+    threshold: int,
+) -> frozenset[str]:
+    """Count persisted journal identities after this family's successful cursor."""
+    if not scope_ids:
+        return frozenset()
+    heads = SOURCE_JOURNAL_HEADS_TABLE
+    rows = await connection.execute(select(heads.c.scope_id, heads.c.position).where(heads.c.scope_id.in_(scope_ids)))
+    cursors = await SourceCursorRepository().load_many(connection, scope_ids, binding_name)
+    eligible = set()
+    for scope_id, position in rows:
+        cursor = cursors.get(scope_id)
+        consumed = 0 if cursor is None else cursor.cursor.sequence
+        if position - consumed >= threshold:
+            eligible.add(scope_id)
+    return frozenset(eligible)
+
+
 class SourceProcessingPendingProvider:
     """Inspect journal metadata, never Source bodies, prompts, or models."""
 
