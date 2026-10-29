@@ -78,6 +78,14 @@ def identity_string(length: int):
     )
 
 
+SOURCE_LIFECYCLE_TABLE = Table(
+    "pc_source_lifecycle",
+    SHARED_METADATA,
+    Column("scope_id", identity_string(MAX_SCOPE_ID_LENGTH), primary_key=True),
+    Column("graph", Text().with_variant(MEDIUMTEXT(), "mysql"), nullable=False),
+)
+
+
 def _canonical_payload_type():
     return LargeBinary().with_variant(MEDIUMBLOB(), "mysql")
 
@@ -896,6 +904,7 @@ RECALL_TOKEN_DAILY_TABLE = Table(
 )
 
 SHARED_TABLES = (
+    SOURCE_LIFECYCLE_TABLE,
     SOURCE_JOURNAL_HEADS_TABLE,
     SOURCES_TABLE,
     ARTIFACTS_TABLE,

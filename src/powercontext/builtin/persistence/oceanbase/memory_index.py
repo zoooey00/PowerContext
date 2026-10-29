@@ -42,7 +42,7 @@ from powercontext.builtin.artifacts.memory import (
     MemorySearchRequest,
 )
 from powercontext.builtin.artifacts.memory.canonical import embedding_content_hash, validate_embedding
-from powercontext.builtin.persistence.memory_index import memory_channel_hits
+from powercontext.builtin.persistence.memory_index import CompositeMemoryIndex, memory_channel_hits
 from powercontext.builtin.persistence.tables import (
     ARTIFACT_HEADS_TABLE,
     MAX_MEMORY_ENTRY_ID_LENGTH,
@@ -504,3 +504,90 @@ def _embedding_hash(profile: EmbeddingProfile, entry_hash: str) -> str:
         normalization=profile.normalization,
         entry_content_hash=entry_hash,
     )
+
+
+class OceanBaseHybridMemoryIndex(CompositeMemoryIndex):
+    """Retrieve both native candidate channels in a single statement."""
+
+    async def search(self, connection, scope_id, request, /):
+        if request.mode != "hybrid":
+            return await super().search(connection, scope_id, request)
+        vector_index = next(index for index in self.indexes if index.capabilities.vector)
+        if request.embedding_profile != vector_index.profile or request.query_vector is None:
+            raise CapabilityNotSupportedError("embedding-profile")
+        if not await vector_index.vector_complete(connection, scope_id, request.memories, vector_index.profile):
+            raise CapabilityNotSupportedError("vector")
+        tags = "" if request.tag_filter is None else memory_tag_sql("m")
+        lexical = """
+            SELECT m.memory_artifact_id, m.head_revision, m.entry_id, m.entry_version_id, v.text,
+                   MATCH(m.searchable_text) AGAINST (:query) AS channel_score, 'fts' AS channel
+            FROM pc_memory_entry_heads AS m
+            JOIN pc_memory_entry_versions AS v
+              ON v.scope_id = m.scope_id AND v.memory_artifact_id = m.memory_artifact_id
+             AND v.entry_version_id = m.entry_version_id
+            WHERE m.scope_id = :scope_id AND m.memory_artifact_id IN :memory_artifact_ids
+              AND MATCH(m.searchable_text) AGAINST (:query)
+        """
+        lexical += (
+            tags
+            + """
+            ORDER BY channel_score DESC, m.memory_artifact_id, m.entry_id, m.entry_version_id
+            LIMIT :candidate_limit
+        """
+        )
+        semantic = _OCEANBASE_VECTOR_SEARCH_SQL.replace(
+            "l2_distance(m.embedding, :query_vector) AS distance",
+            "l2_distance(m.embedding, :query_vector) AS channel_score, 'vector' AS channel",
+        ).replace("ORDER BY", tags + "ORDER BY")
+        if tags:
+            semantic = semantic.replace(" APPROXIMATE", "")
+        # Channel SQL is internal; all query, scope, tag and vector values remain bound.
+        union = "SELECT * FROM ({}) AS lexical UNION ALL SELECT * FROM ({}) AS semantic"
+        sql = text(union.format(lexical, semantic))
+        bindings = [
+            bindparam("memory_artifact_ids", expanding=True),
+            bindparam("query_vector", type_=VECTOR(vector_index.profile.dimension)),
+        ]
+        if tags:
+            bindings.extend((bindparam("tag_keys", expanding=True), bindparam("tag_hashes", expanding=True)))
+        sql = sql.bindparams(*bindings)
+        rows = (
+            (
+                await connection.execute(
+                    sql,
+                    {
+                        "scope_id": scope_id,
+                        "query": request.analyzed_query,
+                        "memory_artifact_ids": tuple(memory.artifact_id for memory in request.memories),
+                        "query_vector": validate_embedding(
+                            request.query_vector, dimension=vector_index.profile.dimension
+                        ),
+                        "candidate_limit": request.candidate_limit,
+                        **memory_tag_parameters(request.tag_filter),
+                    },
+                )
+            )
+            .mappings()
+            .all()
+        )
+        fts = sorted(
+            (row for row in rows if row["channel"] == "fts"),
+            key=lambda row: (
+                -float(row["channel_score"]),
+                row["memory_artifact_id"],
+                row["entry_id"],
+                row["entry_version_id"],
+            ),
+        )
+        vector = sorted(
+            (dict(row, distance=row["channel_score"]) for row in rows if row["channel"] == "vector"),
+            key=lambda row: (
+                float(row["distance"]),
+                row["memory_artifact_id"],
+                row["entry_id"],
+                row["entry_version_id"],
+            ),
+        )
+        return MemorySearchChannels(
+            fts=memory_channel_hits(fts, request.memories), vector=memory_channel_hits(vector, request.memories)
+        )
