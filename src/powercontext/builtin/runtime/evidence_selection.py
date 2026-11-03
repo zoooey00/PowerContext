@@ -134,7 +134,7 @@ def _sentences(candidates):
             # Splitting only at whitespace preserves all punctuation and original offsets.
             boundaries = [
                 0,
-                *(match.end() for match in re.finditer(r"(?<=[.!?。！？])\s+|\n+", hit.text)),  # noqa: RUF001
+                *_sentence_boundaries(hit.text),
                 len(hit.text),
             ]
             for start, end in itertools.pairwise(boundaries):
@@ -150,7 +150,7 @@ def _sentences(candidates):
 
 def select_evidence(request, candidates):
     query = _terms(request.query)
-    sentences = _sentences(candidates)
+    sentences = _attach_references(_sentences(candidates), query, request.max_bytes, candidates)
     frequencies = Counter(term for _, terms in sentences for term in terms)
     weights = {term: 1 + math.log(1 + len(sentences) / (1 + frequencies[term])) for term in query}
     ranked = []
@@ -242,3 +242,52 @@ def _evidence_weight(text):
     ):
         return 1.5
     return 1.0
+
+
+def _sentence_boundaries(text):
+    for match in re.finditer(r"(?<=[.!?。！？])\s+|\n+", text):  # noqa: RUF001
+        prefix = text[: match.start()]
+        # A soft line wrap is not the end of a scientific observation.
+        if match.group().count("\n") == 1 and not prefix.endswith(tuple(".!?。！？")):  # noqa: RUF001
+            continue
+        if re.search(r"\b(?:et al|e\.g|i\.e|fig|eq|dr|prof|vs|approx)\.$", prefix, re.IGNORECASE):
+            continue
+        if re.search(r"\b[A-Z]\.$", prefix):
+            continue
+        yield match.end()
+
+
+def _attach_references(sentences, query, budget, candidates):
+    """Keep an otherwise unmatchable anaphoric result with its antecedent.
+
+    Never join across entry identities or paragraphs. Keep the independently
+    useful antecedent when the combined literal passage cannot fit the budget.
+    """
+    result = []
+    for fragment, terms in sentences:
+        if (
+            result
+            and not (query.keys() & terms.keys())
+            and re.match(r"(?:It|They|This|These|Those|Such)\b", fragment.text)
+        ):
+            previous, previous_terms = result[-1]
+            if previous.address == fragment.address and query.keys() & previous_terms.keys():
+                source = next(
+                    hit.text
+                    for group in candidates
+                    for hit in group.hits
+                    if group.scope_id == fragment.address.memory.scope_id
+                    and hit.memory_ref == fragment.address.memory.artifact
+                    and hit.entry_id == fragment.address.entry_id
+                    and hit.entry_version_id == fragment.address.entry_version_id
+                )
+                gap = source[previous.end : fragment.start]
+                if not gap.strip() and gap.count("\n") < 2:
+                    joined = EvidenceFragment(
+                        fragment.address, previous.start, fragment.end, source[previous.start : fragment.end]
+                    )
+                    if len(_render([joined]).encode("utf-8")) <= budget:
+                        result[-1] = (joined, previous_terms + terms)
+                        continue
+        result.append((fragment, terms))
+    return result
