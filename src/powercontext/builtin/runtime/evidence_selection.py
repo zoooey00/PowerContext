@@ -158,7 +158,8 @@ def select_evidence(request, candidates):
         overlap = sum(weight for term, weight in weights.items() if term in terms)
         if overlap:
             coverage = overlap / max(sum(weights.values()), 1)
-            score = overlap * (1 + coverage) / (1 + sum(terms.values()) / 40)
+            score = overlap * (1 + coverage) / (1 + sum(terms.values()) / 80)
+            score *= _evidence_weight(fragment.text)
             ranked.append((-score, index, fragment))
     ranked.sort(key=lambda item: (item[0], item[1]))
     selected, content = _budgeted_selection(ranked, candidates, request.max_bytes)
@@ -221,3 +222,23 @@ def _extend_selection(selected, fragment, candidates):
             remaining.append(previous)
     remaining.insert(position, fragment)
     return remaining
+
+
+def _evidence_weight(text):
+    """Distinguish reported observations from a study's proposed hypothesis.
+
+    These cues affect ranking only; every returned character is still literal.
+    Background and objective sentences remain eligible when no result is present.
+    """
+    lower = text.lower()
+    if re.search(
+        r"\b(?:aim(?:ed|s)? to|sought to|we hypothesi[sz]|we investigated whether|to determine whether|objective[s]?[: ])",
+        lower,
+    ):
+        return 0.55
+    if re.search(
+        r"\b(?:we (?:found|show|demonstrat)|results? (?:show|demonstrat|indicat)|conclu(?:sion|de)|these (?:findings|results)|associated with|correlat|significantly|revealed|reduced|increased|decreased)\w*",
+        lower,
+    ):
+        return 1.5
+    return 1.0

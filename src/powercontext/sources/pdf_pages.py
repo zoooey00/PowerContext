@@ -181,6 +181,14 @@ _STOP = {
     "report",
     "fiscal",
     "fy",
+    "state",
+    "explicitly",
+    "outlined",
+    "directly",
+    "quantity",
+    "then",
+    "if",
+    "not",
 }
 _EXPANSIONS = {
     "geographies": "geographic geography segments countries international",
@@ -257,6 +265,11 @@ def _rank_pages(hits, query, expanded):
                     * 2.2
                     / (tf + 1.2 * (0.25 + 0.75 * length / max(average, 1)))
                 )
+        # Financial statements often contain the required numbers but few of
+        # the explanatory words in a natural-language question. Match requested
+        # report sections against headings, rather than rewarding incidental
+        # mentions of those sections in notes or management commentary.
+        score += _section_score(hit.text, query)
         ranked.append((-score, key, hit))
     ranked.sort(key=lambda item: (item[0], item[1]))
     return tuple(
@@ -279,3 +292,35 @@ async def _distinct_pages(memory, ranked, limit):
         if len(selected) == limit:
             break
     return tuple(selected)
+
+
+def _section_score(text, query):
+    head = text.lower()
+    terms = set(query)
+    sections = (
+        (
+            {"income", "earnings", "profit", "ebitda", "margin", "restructuring"},
+            r"consolidated statements? of (?:income|earnings|operations)|consolidated income statements?",
+        ),
+        (
+            {"cash", "capex", "ebitda", "depreciation", "amortization"},
+            r"consolidated statements? of cash flows?|consolidated cash flow statements?",
+        ),
+        (
+            {"assets", "liabilities", "equity", "balance", "debt", "capital"},
+            r"consolidated balance sheets?|consolidated statements? of financial (?:position|condition)",
+        ),
+        ({"legal", "litigation", "battles", "lawsuits"}, r"item\s*3[. :]*legal proceedings"),
+        (
+            {"geographies", "geographic", "operates", "segments"},
+            r"(?:our|reportable|operating|business) (?:divisions|segments)|item\s*1[. :]*business",
+        ),
+    )
+    # Ignore contents pages: they mention all headings without their evidence.
+    if len(re.findall(r"item\s+\d+[a-z]?[.]", head)) >= 3:
+        return 0.0
+    return 18.0 * sum(
+        bool(terms & triggers)
+        and any(re.fullmatch(pattern + r"[ .:]*(?:\(continued\))?", line.strip()) for line in head.splitlines())
+        for triggers, pattern in sections
+    )
