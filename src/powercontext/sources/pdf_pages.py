@@ -219,13 +219,15 @@ async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple:
     expanded = Counter(query)
     for word in query:
         expanded.update(_tokens(_EXPANSIONS.get(word, "")))
-    # Fetch broad lexical candidates, then apply length-normalized lexical relevance.
+    # Long questions face a multi-term admission floor in native Memory search.
+    # Add independent term queries so a page containing one decisive financial
+    # term reaches the reranker even when it misses the conversational wording.
     terms = tuple(expanded)
+    queries = [" ".join(terms[offset : offset + 24]) for offset in range(0, len(terms), 24)]
+    queries.extend(term for term in terms if len(term) >= 3 and not term.isdigit())
     hits = {}
-    for offset in range(0, len(terms), 24):
-        page = await memory.search(
-            SearchMemoryRequest(query=" ".join(terms[offset : offset + 24]), mode="fts", limit=100)
-        )
+    for query_text in dict.fromkeys(queries):
+        page = await memory.search(SearchMemoryRequest(query=query_text, mode="fts", limit=100))
         for hit in page.hits:
             key = (hit.memory_ref.artifact_id, hit.entry_id, hit.entry_version_id)
             hits[key] = hit

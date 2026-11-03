@@ -83,7 +83,9 @@ def _terms(text):
             if word.endswith(suffix) and len(word) > len(suffix) + 3:
                 word = word[: -len(suffix)] + ("y" if suffix == "ies" else "")
                 break
-        result.append(word)
+        # Inflected forms such as "increased" already lose their final e;
+        # normalize the uninflected form to the same comparison key.
+        result.append(word[:-1] if word.endswith("e") and len(word) > 4 else word)
     return Counter(result)
 
 
@@ -156,17 +158,10 @@ def select_evidence(request, candidates):
         overlap = sum(weight for term, weight in weights.items() if term in terms)
         if overlap:
             coverage = overlap / max(sum(weights.values()), 1)
-            score = overlap * (1 + coverage) / (1 + len(terms) / 80)
+            score = overlap * (1 + coverage) / (1 + sum(terms.values()) / 40)
             ranked.append((-score, index, fragment))
     ranked.sort(key=lambda item: (item[0], item[1]))
-    selected = []
-    content = None
-    for _, _, fragment in ranked:
-        trial = _extend_selection(selected, fragment, candidates)
-        rendered = _render(trial)
-        if len(rendered.encode("utf-8")) <= request.max_bytes:
-            selected = trial
-            content = rendered
+    selected, content = _budgeted_selection(ranked, candidates, request.max_bytes)
     if content is None:
         return PreparedContextBuild(PreparedContext(status="empty", content=None, content_bytes=0), ())
     return PreparedContextBuild(
@@ -174,6 +169,33 @@ def select_evidence(request, candidates):
         origins=tuple(fragment.address for fragment in selected),
         fragments=tuple(selected),
     )
+
+
+def _budgeted_selection(ranked, candidates, budget):
+    """Keep bounded alternatives instead of irrevocably taking the first span.
+
+    Costs include merged citations, JSON escaping and the complete envelope.
+    The beam bounds CPU/memory independently of the number of source sentences.
+    """
+    states = [(0.0, 0, [], None)]
+    for negative_score, _, fragment in ranked[:48]:
+        alternatives = list(states)
+        for utility, _, selected, _ in states:
+            trial = _extend_selection(selected, fragment, candidates)
+            rendered = _render(trial)
+            size = len(rendered.encode("utf-8"))
+            if size <= budget:
+                alternatives.append((utility - negative_score, size, trial, rendered))
+        alternatives.sort(key=lambda state: (-state[0], state[1]))
+        unique = {}
+        for state in alternatives:
+            unique.setdefault(state[3], state)
+        # Preserve the empty option: an expensive earlier sentence must not
+        # prevent a later pair of cheap, stronger sentences from competing.
+        states = list(unique.values())[:31]
+        states.append((0.0, 0, [], None))
+    best = min(states, key=lambda state: (-state[0], state[1]))
+    return best[2], best[3]
 
 
 def _extend_selection(selected, fragment, candidates):
