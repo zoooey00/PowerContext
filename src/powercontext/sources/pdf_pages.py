@@ -272,6 +272,33 @@ def _tokens(text):
     return Counter(word for word in re.findall(r"[a-z]+|\d+", text.lower()) if word not in _STOP)
 
 
+def _metric_terms(question):
+    """Retrieve the statement inputs of a metric even when its name is absent.
+
+    These accounting relationships are query expansions, not computed answers.
+    They operate only on the supplied question and never on benchmark labels.
+    """
+    text = " ".join(re.findall(r"[a-z]+|\d+", question.lower()))
+    relationships = (
+        (r"return on (?:average )?equity|\broe\b", "net income earnings shareholders equity"),
+        (r"return on (?:average )?assets|\broa\b", "net income earnings total assets"),
+        (r"return on (?:invested )?capital|\broic\b", "operating income tax debt equity cash"),
+        (r"free cash|\bfcf\b", "cash flows operating activities purchases property equipment capital expenditures"),
+        (r"current ratio|working capital", "balance current assets liabilities"),
+        (r"quick ratio|acid test", "balance cash receivables investments current liabilities"),
+        (r"gross (?:profit|margin)", "income net sales revenue cost sales goods"),
+        (r"(?:net|operating|profit) margin", "income earnings operating net sales revenue"),
+        (r"earnings per share|\beps\b", "income earnings diluted basic shares"),
+        (r"inventory turnover|days (?:of )?inventory|\bdio\b", "cost sales goods inventories inventory"),
+        (r"receivables turnover|days sales outstanding|\bdso\b", "net sales revenue accounts receivable"),
+        (r"days payable outstanding|\bdpo\b", "cost sales goods accounts payable"),
+        (r"cash conversion cycle", "cost sales revenue inventories receivables accounts payable"),
+        (r"interest coverage", "operating income interest expense"),
+        (r"asset turnover", "net sales revenue total assets"),
+    )
+    return _tokens(" ".join(terms for pattern, terms in relationships if re.search(pattern, text)))
+
+
 async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple:
     """Search the scoped public Memory API and rank distinct literal page evidence."""
     from powercontext.builtin.runtime.models import SearchMemoryRequest
@@ -284,6 +311,7 @@ async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple:
         return ()
     query = _tokens(question)
     expanded = Counter(query)
+    expanded.update(_metric_terms(question))
     for word in query:
         expanded.update(_tokens(_EXPANSIONS.get(word, "")))
     # Long questions face a multi-term admission floor in native Memory search.
@@ -328,7 +356,7 @@ def _rank_pages(hits, query, expanded):
         # the explanatory words in a natural-language question. Match requested
         # report sections against headings, rather than rewarding incidental
         # mentions of those sections in notes or management commentary.
-        score += _section_score(hit.text, query)
+        score += _section_score(hit.text, expanded)
         ranked.append((-score, key, hit))
     ranked.sort(key=lambda item: (item[0], item[1]))
     return tuple(
@@ -359,15 +387,18 @@ def _section_score(text, query):
     sections = (
         (
             {"income", "earnings", "profit", "ebitda", "margin", "restructuring"},
-            r"consolidated statements? of (?:income|earnings|operations)|consolidated income statements?",
+            r"(?:(?:consolidated|combined) )?statements? of (?:income|earnings|operations)"
+            r"|(?:(?:consolidated|combined) )?income statements?",
         ),
         (
             {"cash", "capex", "ebitda", "depreciation", "amortization"},
-            r"consolidated statements? of cash flows?|consolidated cash flow statements?",
+            r"(?:(?:consolidated|combined) )?statements? of cash flows?"
+            r"|(?:(?:consolidated|combined) )?cash flows? statements?",
         ),
         (
             {"assets", "liabilities", "equity", "balance", "debt", "capital"},
-            r"consolidated balance sheets?|consolidated statements? of financial (?:position|condition)",
+            r"(?:(?:consolidated|combined) )?balance sheets?"
+            r"|(?:(?:consolidated|combined) )?statements? of financial (?:position|condition)",
         ),
         ({"legal", "litigation", "battles", "lawsuits"}, r"item\s*3[. :]*legal proceedings"),
         (
