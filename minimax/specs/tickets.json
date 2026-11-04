@@ -1,0 +1,9 @@
+{
+  "revision": 1,
+  "entries": [
+    {"id": "TICKET-001", "tags": ["tickets", "status"], "text": "list_tickets: status=None returns all tickets. Keep owner exact matching, ascending id ordering, no input mutation, and independent result row dictionaries."},
+    {"id": "TICKET-002", "tags": ["tickets", "status"], "text": "Optional status is a string: strip whitespace and lowercase, then allow only open or closed. Combine status and owner with AND. Unknown, empty or non-string status raises ValueError, even for empty input."},
+    {"id": "TICKET-003", "tags": ["tickets", "status"], "text": "Regression contract: unknown owner and empty input return an empty list. Owner comparison remains case sensitive."},
+    {"id": "BILLING-001", "tags": ["billing"], "text": "Unrelated billing module requires integer cents. Do not include this in ticket contexts."}
+  ]
+}

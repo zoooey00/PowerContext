@@ -1,0 +1,7 @@
+{
+  "id": "ticket-status",
+  "description": "Add status filtering to list_tickets. Apply TICKET-002; preserve TICKET-001 and TICKET-003. Change only business/tickets.py; do not change tests.",
+  "terms": ["tickets", "status"],
+  "required": ["TICKET-001", "TICKET-002", "TICKET-003", "business/tickets.py", "tests/test_target.py", "tests/test_regression.py", "tests/data.py"],
+  "todo": ["implement status filtering", "run unchanged target and regression tests", "verify restart and spec refresh"]
+}

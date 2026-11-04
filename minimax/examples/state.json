@@ -1,0 +1,5 @@
+{
+  "completed": ["source import", "source selection"],
+  "todo": ["run target and regression tests"],
+  "validation": {"status": "not-run", "note": "Sample state only, not test evidence"}
+}

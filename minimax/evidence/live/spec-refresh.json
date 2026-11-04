@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "updated_spec": {
+    "id": "TICKET-002",
+    "path": "specs/tickets.json",
+    "symbol": "TICKET-002",
+    "kind": "spec",
+    "content": "Optional status is a string: strip whitespace and lowercase, then allow only open or closed. Combine status and owner with AND. Unknown, empty or non-string status raises ValueError, even for empty input. Spec refresh verification: current revision a97498018a",
+    "revision": "2",
+    "tags": "tickets status",
+    "sha256": "9ae969edbf8fe97766a286dfc3cd3831fd34edace9603b837efcb43deb9745f3"
+  }
+}

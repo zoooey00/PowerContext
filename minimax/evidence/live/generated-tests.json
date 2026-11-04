@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "model_generation_proven": true,
+  "runs": {
+    "before_target": {
+      "command": [
+        "D:\\rjjjj\\1111\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "tests.test_target"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "test_closed (tests.test_target.TargetTests.test_closed) ... FAIL\ntest_combined (tests.test_target.TargetTests.test_combined) ... FAIL\ntest_empty_invalid (tests.test_target.TargetTests.test_empty_invalid) ... FAIL\ntest_invalid (tests.test_target.TargetTests.test_invalid) ... \n  test_invalid (tests.test_target.TargetTests.test_invalid) (status='') ... FAIL\n  test_invalid (tests.test_target.TargetTests.test_invalid) (status='pending') ... FAIL\n  test_invalid (tests.test_target.TargetTests.test_invalid) (status=0) ... FAIL\n  test_invalid (tests.test_target.TargetTests.test_invalid) (status=False) ... FAIL\n  test_invalid (tests.test_target.TargetTests.test_invalid) (status=[]) ... FAIL\n  test_invalid (tests.test_target.TargetTests.test_invalid) (status={}) ... FAIL\ntest_normalization (tests.test_target.TargetTests.test_normalization) ... FAIL\ntest_open (tests.test_target.TargetTests.test_open) ... FAIL\n\n======================================================================\nFAIL: test_closed (tests.test_target.TargetTests.test_closed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 11, in test_closed\n    self.assertEqual([r['id'] for r in list_tickets(ROWS, status='closed')], [2])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [1, 2, 3] != [2]\n\nFirst differing element 0:\n1\n2\n\nFirst list contains 2 additional elements.\nFirst extra element 1:\n2\n\n- [1, 2, 3]\n+ [2]\n\n======================================================================\nFAIL: test_combined (tests.test_target.TargetTests.test_combined)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 17, in test_combined\n    self.assertEqual([r['id'] for r in list_tickets(ROWS, owner='alice', status='open')], [3])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [2, 3] != [3]\n\nFirst differing element 0:\n2\n3\n\nFirst list contains 1 additional elements.\nFirst extra element 1:\n3\n\n- [2, 3]\n+ [3]\n\n======================================================================\nFAIL: test_empty_invalid (tests.test_target.TargetTests.test_empty_invalid)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 25, in test_empty_invalid\n    with self.assertRaises(ValueError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status='')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status='pending')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status=False)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status=[])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_invalid (tests.test_target.TargetTests.test_invalid) (status={})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 21, in test_invalid\n    with self.subTest(status=status), self.assertRaises(ValueError):\n                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_normalization (tests.test_target.TargetTests.test_normalization)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 14, in test_normalization\n    self.assertEqual([r['id'] for r in list_tickets(ROWS, status=' OPEN ')], [1, 3])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [1, 2, 3] != [1, 3]\n\nFirst differing element 1:\n2\n3\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n3\n\n- [1, 2, 3]\n?     ---\n\n+ [1, 3]\n\n======================================================================\nFAIL: test_open (tests.test_target.TargetTests.test_open)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\赵美龙\\Documents\\Codex\\2026-11-04\\https-github-com-oceanbase-powercontext-tree\\work\\powercontext\\minimax\\runtime\\tmp48qyn1o4\\tests\\test_target.py\", line 8, in test_open\n    self.assertEqual([r['id'] for r in list_tickets(ROWS, status='open')], [1, 3])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [1, 2, 3] != [1, 3]\n\nFirst differing element 1:\n2\n3\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n3\n\n- [1, 2, 3]\n?     ---\n\n+ [1, 3]\n\n----------------------------------------------------------------------\nRan 6 tests in 0.007s\n\nFAILED (failures=11)\n",
+      "code_sha256": "22d671522237f6cf5d4efdc8d7532da7f9d7192c21b6aa4c486554e4ed8cc28b",
+      "tests_sha256": {
+        "data.py": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679",
+        "test_regression.py": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae",
+        "test_target.py": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811",
+        "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "before_regression": {
+      "command": [
+        "D:\\rjjjj\\1111\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "tests.test_regression"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_default_and_order (tests.test_regression.RegressionTests.test_default_and_order) ... ok\ntest_empty (tests.test_regression.RegressionTests.test_empty) ... ok\ntest_exact_owner (tests.test_regression.RegressionTests.test_exact_owner) ... ok\ntest_independent_rows (tests.test_regression.RegressionTests.test_independent_rows) ... ok\ntest_owner (tests.test_regression.RegressionTests.test_owner) ... ok\ntest_unknown_owner (tests.test_regression.RegressionTests.test_unknown_owner) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.000s\n\nOK\n",
+      "code_sha256": "22d671522237f6cf5d4efdc8d7532da7f9d7192c21b6aa4c486554e4ed8cc28b",
+      "tests_sha256": {
+        "data.py": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679",
+        "test_regression.py": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae",
+        "test_target.py": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811",
+        "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "after_target": {
+      "command": [
+        "D:\\rjjjj\\1111\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "tests.test_target"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_closed (tests.test_target.TargetTests.test_closed) ... ok\ntest_combined (tests.test_target.TargetTests.test_combined) ... ok\ntest_empty_invalid (tests.test_target.TargetTests.test_empty_invalid) ... ok\ntest_invalid (tests.test_target.TargetTests.test_invalid) ... ok\ntest_normalization (tests.test_target.TargetTests.test_normalization) ... ok\ntest_open (tests.test_target.TargetTests.test_open) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.000s\n\nOK\n",
+      "code_sha256": "9175808c2db0328320ee3e47f293e935d1296c13e2959ddb749a1e2f888a0ec9",
+      "tests_sha256": {
+        "data.py": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679",
+        "test_regression.py": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae",
+        "test_target.py": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811",
+        "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "after_regression": {
+      "command": [
+        "D:\\rjjjj\\1111\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "tests.test_regression"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_default_and_order (tests.test_regression.RegressionTests.test_default_and_order) ... ok\ntest_empty (tests.test_regression.RegressionTests.test_empty) ... ok\ntest_exact_owner (tests.test_regression.RegressionTests.test_exact_owner) ... ok\ntest_independent_rows (tests.test_regression.RegressionTests.test_independent_rows) ... ok\ntest_owner (tests.test_regression.RegressionTests.test_owner) ... ok\ntest_unknown_owner (tests.test_regression.RegressionTests.test_unknown_owner) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.000s\n\nOK\n",
+      "code_sha256": "9175808c2db0328320ee3e47f293e935d1296c13e2959ddb749a1e2f888a0ec9",
+      "tests_sha256": {
+        "data.py": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679",
+        "test_regression.py": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae",
+        "test_target.py": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811",
+        "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  }
+}

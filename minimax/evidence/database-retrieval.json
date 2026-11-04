@@ -1,0 +1,83 @@
+{
+  "source_ids": [
+    "business/tickets.py",
+    "TICKET-001",
+    "TICKET-002",
+    "TICKET-003",
+    "tests/data.py",
+    "tests/test_regression.py",
+    "tests/test_target.py"
+  ],
+  "rows": [
+    {
+      "id": "business/tickets.py",
+      "path": "business/tickets.py",
+      "symbol": "list_tickets",
+      "kind": "code",
+      "content": "\"\"\"Small ticket query service. Input rows belong to the caller.\"\"\"\n\n\ndef list_tickets(rows, owner=None, status=None):\n    \"\"\"Return matching tickets sorted by id.\"\"\"\n    normalized_status = None\n    if status is not None:\n        if not isinstance(status, str):\n            raise ValueError(\"status must be 'open' or 'closed'\")\n        normalized_status = status.strip().lower()\n        if normalized_status not in (\"open\", \"closed\"):\n            raise ValueError(\"status must be 'open' or 'closed'\")\n\n    selected = [\n        row\n        for row in rows\n        if (owner is None or row[\"owner\"] == owner)\n        and (normalized_status is None or row[\"status\"] == normalized_status)\n    ]\n    return [dict(row) for row in sorted(selected, key=lambda row: row[\"id\"])]\n",
+      "revision": "9175808c2db0328320ee3e47f293e935d1296c13e2959ddb749a1e2f888a0ec9",
+      "tags": "tickets status",
+      "sha256": "9175808c2db0328320ee3e47f293e935d1296c13e2959ddb749a1e2f888a0ec9"
+    },
+    {
+      "id": "TICKET-001",
+      "path": "specs/tickets.json",
+      "symbol": "TICKET-001",
+      "kind": "spec",
+      "content": "list_tickets: status=None returns all tickets. Keep owner exact matching, ascending id ordering, no input mutation, and independent result row dictionaries.",
+      "revision": "1",
+      "tags": "tickets status",
+      "sha256": "197796e8b3087b56ca33a390689a0cfb563db5215902a58086d25a7ace41604f"
+    },
+    {
+      "id": "TICKET-002",
+      "path": "specs/tickets.json",
+      "symbol": "TICKET-002",
+      "kind": "spec",
+      "content": "Optional status is a string: strip whitespace and lowercase, then allow only open or closed. Combine status and owner with AND. Unknown, empty or non-string status raises ValueError, even for empty input.",
+      "revision": "1",
+      "tags": "tickets status",
+      "sha256": "ebc396b05520302f17d292943e6fdab948a0d8d0a5a25e03602f6e281454e1c9"
+    },
+    {
+      "id": "TICKET-003",
+      "path": "specs/tickets.json",
+      "symbol": "TICKET-003",
+      "kind": "spec",
+      "content": "Regression contract: unknown owner and empty input return an empty list. Owner comparison remains case sensitive.",
+      "revision": "1",
+      "tags": "tickets status",
+      "sha256": "693b77d851c879653aff3138e53b5a83fc474b86e9abebf5d46707d78ece7f7e"
+    },
+    {
+      "id": "tests/data.py",
+      "path": "tests/data.py",
+      "symbol": "",
+      "kind": "test",
+      "content": "ROWS = [\n    {'id': 3, 'owner': 'alice', 'status': 'open', 'title': 'Export'},\n    {'id': 1, 'owner': 'bob', 'status': 'open', 'title': 'Login'},\n    {'id': 2, 'owner': 'alice', 'status': 'closed', 'title': 'Search'},\n]\n",
+      "revision": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679",
+      "tags": "tickets status",
+      "sha256": "a324e4f6ca3f7ca54e310c6255522e351029acf42f2b145967b8f19dca1e5679"
+    },
+    {
+      "id": "tests/test_regression.py",
+      "path": "tests/test_regression.py",
+      "symbol": "RegressionTests, test_default_and_order, test_owner, test_unknown_owner, test_exact_owner, test_empty, test_independent_rows",
+      "kind": "test",
+      "content": "import copy\nimport unittest\nfrom business.tickets import list_tickets\nfrom tests.data import ROWS\n\n\nclass RegressionTests(unittest.TestCase):\n    def test_default_and_order(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS)], [1, 2, 3])\n\n    def test_owner(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS, owner='alice')], [2, 3])\n\n    def test_unknown_owner(self):\n        self.assertEqual(list_tickets(ROWS, owner='nobody'), [])\n\n    def test_exact_owner(self):\n        self.assertEqual(list_tickets(ROWS, owner='ALICE'), [])\n\n    def test_empty(self):\n        self.assertEqual(list_tickets([]), [])\n\n    def test_independent_rows(self):\n        original = copy.deepcopy(ROWS)\n        result = list_tickets(ROWS)\n        result[0]['title'] = 'changed'\n        self.assertEqual(ROWS, original)\n",
+      "revision": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae",
+      "tags": "tickets status",
+      "sha256": "a8b8a667ecb1568ec1ef2bbc45f69d527f292b1372579b38683d153a93810fae"
+    },
+    {
+      "id": "tests/test_target.py",
+      "path": "tests/test_target.py",
+      "symbol": "TargetTests, test_open, test_closed, test_normalization, test_combined, test_invalid, test_empty_invalid",
+      "kind": "test",
+      "content": "import unittest\nfrom business.tickets import list_tickets\nfrom tests.data import ROWS\n\n\nclass TargetTests(unittest.TestCase):\n    def test_open(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS, status='open')], [1, 3])\n\n    def test_closed(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS, status='closed')], [2])\n\n    def test_normalization(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS, status=' OPEN ')], [1, 3])\n\n    def test_combined(self):\n        self.assertEqual([r['id'] for r in list_tickets(ROWS, owner='alice', status='open')], [3])\n\n    def test_invalid(self):\n        for status in ['', 'pending', 0, False, [], {}]:\n            with self.subTest(status=status), self.assertRaises(ValueError):\n                list_tickets(ROWS, status=status)\n\n    def test_empty_invalid(self):\n        with self.assertRaises(ValueError):\n            list_tickets([], status='pending')\n",
+      "revision": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811",
+      "tags": "tickets status",
+      "sha256": "3f893ec705d61fc57cb3945b1a238b18425c0eae3843bdba99ef2c429c7be811"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "task_id": "ticket-status-26b087197453",
+  "minimax": true,
+  "database": true,
+  "restart_state_used": true,
+  "spec_refresh": true
+}
