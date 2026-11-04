@@ -105,7 +105,7 @@ def _render(fragments):
             "end": fragment.end,
         })
     return "\n".join((
-        TRUST_POLICY,
+        TRUST_POLICY + "\n",
         "BEGIN_POWERCONTEXT_PREPARED_CONTEXT_V1",
         json.dumps({"trust": "untrusted_history", "items": items}, ensure_ascii=False, separators=(",", ":")),
         "END_POWERCONTEXT_PREPARED_CONTEXT_V1",
@@ -153,12 +153,21 @@ def select_evidence(request, candidates):
     sentences = _attach_references(_sentences(candidates), query, request.max_bytes, candidates)
     frequencies = Counter(term for _, terms in sentences for term in terms)
     weights = {term: 1 + math.log(1 + len(sentences) / (1 + frequencies[term])) for term in query}
+    # Preserve the discriminating power of scientific identifiers. Generic
+    # words such as risk and development must not outweigh the named protein.
+    identifiers = {
+        term
+        for token in re.findall(r"[^\W_]+", request.query)
+        if (token.isupper() and len(token) > 1) or (any(c.isdigit() for c in token) and any(c.isalpha() for c in token))
+        for term in _terms(token)
+    }
+    weights = {term: weight * (3 if term in identifiers else 1) for term, weight in weights.items()}
     ranked = []
     for index, (fragment, terms) in enumerate(sentences):
         overlap = sum(weight for term, weight in weights.items() if term in terms)
         if overlap:
             coverage = overlap / max(sum(weights.values()), 1)
-            score = overlap * (1 + coverage) / (1 + sum(terms.values()) / 80)
+            score = overlap * (1 + coverage) / (1 + sum(terms.values()) / 200)
             score *= _evidence_weight(fragment.text)
             ranked.append((-score, index, fragment))
     ranked.sort(key=lambda item: (item[0], item[1]))
@@ -200,7 +209,7 @@ def _budgeted_selection(ranked, candidates, budget):
 
 
 def _extend_selection(selected, fragment, candidates):
-    """Coalesce adjacent literal sentences so a citation is charged only once."""
+    """Join literal passages when their intervening text costs less than a citation."""
     source = next(
         hit.text
         for group in candidates
@@ -214,10 +223,14 @@ def _extend_selection(selected, fragment, candidates):
     position = len(selected)
     for previous in selected:
         gap_start, gap_end = min(previous.end, fragment.end), max(previous.start, fragment.start)
-        if previous.address == fragment.address and not source[gap_start:gap_end].strip():
+        start, end = min(previous.start, fragment.start), max(previous.end, fragment.end)
+        joined = EvidenceFragment(fragment.address, start, end, source[start:end])
+        if previous.address == fragment.address and (
+            not source[gap_start:gap_end].strip()
+            or len(_render([joined]).encode("utf-8")) <= len(_render([previous, fragment]).encode("utf-8"))
+        ):
             position = min(position, len(remaining))
-            start, end = min(previous.start, fragment.start), max(previous.end, fragment.end)
-            fragment = EvidenceFragment(fragment.address, start, end, source[start:end])
+            fragment = joined
         else:
             remaining.append(previous)
     remaining.insert(position, fragment)
@@ -231,6 +244,8 @@ def _evidence_weight(text):
     Background and objective sentences remain eligible when no result is present.
     """
     lower = text.lower()
+    if re.search(r"\bp\s*[<=>]|\b(?:confidence interval|odds ratio|hazard ratio)\b|\d\s*%", lower):
+        return 2.0
     if re.search(
         r"\b(?:aim(?:ed|s)? to|sought to|we hypothesi[sz]|we investigated whether|to determine whether|objective[s]?[: ])",
         lower,

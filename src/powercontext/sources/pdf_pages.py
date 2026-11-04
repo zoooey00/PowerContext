@@ -235,13 +235,13 @@ async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple:
     queries.extend(term for term in terms if len(term) >= 3 and not term.isdigit())
     hits = {}
     for query_text in dict.fromkeys(queries):
-        page = await memory.search(SearchMemoryRequest(query=query_text, mode="fts", limit=100))
+        page = await memory.search(SearchMemoryRequest(query=query_text, mode="fts", limit=max(256, limit * 32)))
         for hit in page.hits:
             key = (hit.memory_ref.artifact_id, hit.entry_id, hit.entry_version_id)
             hits[key] = hit
     if not hits:
         return ()
-    return await _distinct_pages(memory, _rank_pages(hits, query, expanded), limit)
+    return await _distinct_pages(memory, _rank_pages(_requested_documents(hits, question), query, expanded), limit)
 
 
 def _rank_pages(hits, query, expanded):
@@ -324,3 +324,30 @@ def _section_score(text, query):
         and any(re.fullmatch(pattern + r"[ .:]*(?:\(continued\))?", line.strip()) for line in head.splitlines())
         for triggers, pattern in sections
     )
+
+
+def _requested_documents(hits, question):
+    """Resolve explicit report identities before comparing their page scores.
+
+    A financial question about one issuer must not be answered with a different
+    issuer's identically titled statements. Only restrict when a report-name
+    prefix actually occurs in the query; opaque IDs retain ordinary retrieval.
+    """
+    query_tokens = re.findall(r"[a-z0-9]+", question.lower())
+    query_words = set(query_tokens)
+    # Filenames commonly collapse spaces or punctuation in company names.
+    query_names = {
+        "".join(query_tokens[start : start + width]) for start in range(len(query_tokens)) for width in range(1, 5)
+    }
+    names = {hit.text.split("\n", 1)[0] for hit in hits.values()}
+    matched = set()
+    for name in names:
+        prefix = re.split(r"[_ -](?:19|20)\d{2}(?:[_ -]|$)", name, maxsplit=1)[0]
+        if prefix == name:
+            continue
+        words = set(re.findall(r"[a-z0-9]+", prefix.lower())) - {"inc", "corp", "corporation", "company", "the"}
+        if words and (words <= query_words or re.sub(r"[^a-z0-9]", "", prefix.lower()) in query_names):
+            matched.add(name)
+    if not matched:
+        return hits
+    return {key: hit for key, hit in hits.items() if hit.text.split("\n", 1)[0] in matched}
