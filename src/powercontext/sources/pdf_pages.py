@@ -21,6 +21,7 @@ import io
 import json
 import math
 import re
+import zlib
 from collections import Counter
 
 from pydantic import BaseModel, Field, StrictInt, field_validator
@@ -64,7 +65,7 @@ def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
         raise ValueError("invalid-pdf-envelope")
     digest = hashlib.sha256(value.content).hexdigest()
     try:
-        reader = PdfReader(io.BytesIO(value.content))
+        reader = PdfReader(io.BytesIO(value.content), strict=True)
         if reader.is_encrypted and not reader.decrypt(""):
             raise ValueError("password-required")  # noqa: TRY301
         pages = tuple(
@@ -72,7 +73,7 @@ def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
                 document_id=value.document_id,
                 document_sha256=digest,
                 page_number=number,
-                text=page.extract_text() or "",
+                text=_extract_page_text(page),
             )
             for number, page in enumerate(reader.pages, start=1)
         )
@@ -81,6 +82,64 @@ def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
     except Exception as error:
         raise ValueError("cannot-completely-parse-pdf") from error
     return pages
+
+
+def _extract_page_text(page):
+    """Reject unreadable content instead of silently materializing a blank page."""
+    visited = set()
+    if "/Contents" in page:
+        _validate_content_stream(page.raw_get("/Contents"), visited)
+    _validate_form_resources(page.get("/Resources"), visited)
+    return page.extract_text() or ""
+
+
+def _validate_content_stream(value, visited):
+    from pypdf.generic import ArrayObject, NullObject, StreamObject
+
+    stream = value.get_object()
+    if isinstance(stream, NullObject):
+        return
+    if isinstance(stream, ArrayObject):
+        for item in stream:
+            _validate_content_stream(item, visited)
+        return
+    if not isinstance(stream, StreamObject):
+        raise TypeError("missing-or-invalid-page-content")
+    if id(stream) in visited:
+        return
+    visited.add(id(stream))
+    filters = stream.get("/Filter", [])
+    if not isinstance(filters, ArrayObject):
+        filters = [filters]
+    if filters and filters[0] in ("/FlateDecode", "/Fl"):
+        # pypdf's forgiving Flate decoder can turn damaged data into b"".
+        # Verify the encoded stream's checksum and end marker first.
+        decoder = zlib.decompressobj()
+        decoder.decompress(stream._data)
+        decoder.flush()
+        if not decoder.eof:
+            raise ValueError("truncated-page-content")
+    stream.get_data()
+    _validate_form_resources(stream.get("/Resources"), visited)
+
+
+def _validate_form_resources(resources, visited):
+    from pypdf.generic import NullObject
+
+    if resources is None:
+        return
+    resources = resources.get_object()
+    if isinstance(resources, NullObject) or "/XObject" not in resources:
+        return
+    objects = resources["/XObject"].get_object()
+    if isinstance(objects, NullObject):
+        return
+    for value in objects.values():
+        obj = value.get_object()
+        if obj is None:
+            raise ValueError("missing-page-xobject")
+        if obj.get("/Subtype") == "/Form":
+            _validate_content_stream(value, visited)
 
 
 class PDFPageSource(Source):
