@@ -13,6 +13,8 @@ from powercontext.sources.pdf_pages import PDF_PAGE_SOURCE_DEFINITION, PDFPageIn
         ("What is the return on equity?", "STATEMENTS OF OPERATIONS\nNet earnings 73\nNet sales 410"),
         ("What is free cash flow?", "STATEMENTS OF CASH FLOWS\nOperating activities 93\nPurchases of property 22"),
         ("What is the current ratio?", "BALANCE SHEETS\nCurrent assets 180\nCurrent liabilities 60"),
+        ("What is asset turnover?", "STATEMENTS OF OPERATIONS\nNet sales 410\nNet earnings 73"),
+        ("What is the return on equity?", "CONSOLIDATED   STATEMENTS\nOF OPERATIONS\nNet earnings 73"),
     ],
 )
 async def test_metric_question_recalls_inputs_not_repeated_metric_mentions(tmp_path, question, statement):

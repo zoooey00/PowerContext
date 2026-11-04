@@ -23,6 +23,7 @@ import math
 import re
 import zlib
 from collections import Counter
+from itertools import pairwise
 
 from pydantic import BaseModel, Field, StrictInt, field_validator
 
@@ -108,19 +109,34 @@ def _validate_content_stream(value, visited):
     if id(stream) in visited:
         return
     visited.add(id(stream))
-    filters = stream.get("/Filter", [])
+    _validate_stream_filters(stream)
+    _validate_form_resources(stream.get("/Resources"), visited)
+
+
+def _validate_stream_filters(stream):
+    from pypdf.generic import ArrayObject, EncodedStreamObject, NameObject, NullObject
+
+    filters = stream.get("/Filter", ArrayObject()).get_object()
     if not isinstance(filters, ArrayObject):
         filters = [filters]
-    if filters and filters[0] in ("/FlateDecode", "/Fl"):
-        # pypdf's forgiving Flate decoder can turn damaged data into b"".
-        # Verify the encoded stream's checksum and end marker first.
-        decoder = zlib.decompressobj()
-        decoder.decompress(stream._data)
-        decoder.flush()
-        if not decoder.eof:
-            raise ValueError("truncated-page-content")
-    stream.get_data()
-    _validate_form_resources(stream.get("/Resources"), visited)
+    parameters = stream.get("/DecodeParms", NullObject()).get_object()
+    if not isinstance(parameters, ArrayObject):
+        parameters = [parameters] * len(filters)
+    data = stream._data
+    for index, filter_name in enumerate(filters):
+        # Check every Flate stage, including compressed data behind ASCII85.
+        if filter_name in ("/FlateDecode", "/Fl"):
+            decoder = zlib.decompressobj()
+            decoder.decompress(data)
+            decoder.flush()
+            if not decoder.eof:
+                raise ValueError("truncated-page-content")
+        stage = EncodedStreamObject()
+        stage[NameObject("/Filter")] = filter_name
+        if index < len(parameters):
+            stage[NameObject("/DecodeParms")] = parameters[index]
+        stage._data = data
+        data = stage.get_data()
 
 
 def _validate_form_resources(resources, visited):
@@ -294,7 +310,7 @@ def _metric_terms(question):
         (r"days payable outstanding|\bdpo\b", "cost sales goods accounts payable"),
         (r"cash conversion cycle", "cost sales revenue inventories receivables accounts payable"),
         (r"interest coverage", "operating income interest expense"),
-        (r"asset turnover", "net sales revenue total assets"),
+        (r"asset turnover", "income net sales revenue total assets"),
     )
     return _tokens(" ".join(terms for pattern, terms in relationships if re.search(pattern, text)))
 
@@ -409,9 +425,10 @@ def _section_score(text, query):
     # Ignore contents pages: they mention all headings without their evidence.
     if len(re.findall(r"item\s+\d+[a-z]?[.]", head)) >= 3:
         return 0.0
+    lines = [" ".join(line.split()) for line in head.splitlines() if line.strip()]
+    headings = lines + [f"{left} {right}" for left, right in pairwise(lines) if len(left) + len(right) < 120]
     return 18.0 * sum(
-        bool(terms & triggers)
-        and any(re.fullmatch(pattern + r"[ .:]*(?:\(continued\))?", line.strip()) for line in head.splitlines())
+        bool(terms & triggers) and any(re.fullmatch(pattern + r"[ .:]*(?:\(continued\))?", line) for line in headings)
         for triggers, pattern in sections
     )
 
