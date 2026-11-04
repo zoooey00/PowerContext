@@ -125,3 +125,40 @@ async def test_restart_distinct_pages_and_issuer_retrieval(tmp_path):
         other = await runtime.scopes.create(ScopeDraft(title="Empty", summary="Isolated", idempotency_key="empty"))
         empty_scope = runtime.memory.for_scope(other.scope_id)
         assert await search_pdf_pages(empty_scope, query) == ()
+
+
+@pytest.mark.parametrize(
+    ("question", "evidence", "distraction"),
+    [
+        (
+            "Has Acme reported materially important ongoing legal battles in 2024?",
+            "Item 2. Properties.\nOur facilities support production.\n"
+            "Item 3. Legal Proceedings.\nLitigation claims remain pending.\n"
+            "Item 4. Mine Safety Disclosures.\nNot applicable.",
+            "Important ongoing employee programs were reported in 2024. "
+            "Materially important programs and ongoing investment support operations. ",
+        ),
+        (
+            "What geographies does Acme primarily operate in as of 2024?",
+            "North America\nManufacturing and distribution.\nEurope\nRetail and wholesale.\n"
+            "Asia Pacific\nRegional beverage operations.",
+            "The board primarily operates important committees in 2024. "
+            "Geographies and changes in operations are mentioned in general risk disclosures. ",
+        ),
+    ],
+)
+async def test_disclosure_survives_conversational_distractors(tmp_path, question, evidence, distraction):
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    texts = [evidence] + [distraction * 3 + str(i) for i in range(30)]
+    observations = []
+    for number, text in enumerate(texts, 1):
+        page = PDFPageInput(document_id="ACME_2024_10K", document_sha256="c" * 64, page_number=number, text=text)
+        observations.append(project_source_for_transport(registry, await registry.resolve(page)))
+    config, scope, stored = await persist(tmp_path, PDF_PAGE_SOURCE_DEFINITION, observations)
+    async with open_builtin_runtime(config) as runtime:
+        memory = runtime.memory.for_scope(scope)
+        citations = await search_pdf_pages(memory, question, limit=1)
+        assert len(citations) == 1
+        record = await memory.get(GetMemoryEntryRequest(citation=citations[0]))
+        source = stored[record.entry.sources[0].source_id]
+        assert source.projection(TEXT_EVIDENCE_PROJECTION_KEY)["metadata"]["page_number"] == 1

@@ -310,10 +310,14 @@ _STOPWORDS = frozenset([
 # General accounting vocabulary and metric inputs, independent of issuers,
 # questions, evidence labels and the contents of any benchmark.
 _CONCEPTS = (
-    (r"geograph|countr|regions?|operates", "geographic countries international segments divisions operations"),
+    (
+        r"geograph|countr|regions?|operates",
+        "geographic countries international segments divisions operations north south america europe asia africa pacific",
+    ),
     (r"legal|litigation|lawsuit|battles", "legal proceedings litigation contingencies lawsuits"),
     (r"capex|capital expend|free cash|fcf", "capital expenditures purchases property plant equipment cash flows"),
     (r"ebitda", "operating income depreciation amortization cash flows"),
+    (r"restructur", "restructuring charges costs income"),
     (r"revenue|sales", "revenue revenues sales"),
     (r"profit|income|earnings|margin|p[ &]+l", "income earnings operations sales revenue"),
     (r"debt|leverage|borrow", "debt borrowings maturities indebtedness"),
@@ -356,8 +360,10 @@ def _document_matches(names: set[str], question: str) -> set[str]:
 
 def _heading_bonus(text: str, query: set[str]) -> float:
     lines = [" ".join(line.lower().split()) for line in text.splitlines() if line.strip()]
-    # Contents/index pages name sections but do not contain their evidence.
-    if sum(bool(re.match(r"item\s+\d+[a-z]?\b", line)) for line in lines) >= 3:
+    # Multiple numbered items can share a real disclosure page. A contents
+    # entry additionally ends in a page locator; counting item headings alone
+    # would suppress genuine legal/properties/mine-safety disclosures.
+    if sum(bool(re.fullmatch(r"item\s+\d+[a-z]?[. :].{1,120}\s\d{1,4}", line)) for line in lines) >= 3:
         return 0.0
     headings = lines + [a + " " + b for a, b in pairwise(lines) if len(a) + len(b) < 120]
     sections = (
@@ -373,10 +379,11 @@ def _heading_bonus(text: str, query: set[str]) -> float:
             {"assets", "liabilities", "equity", "debt", "capital", "balance"},
             r"(?:consolidated |combined )?(?:balance sheets?|statements? of financial (?:position|condition))",
         ),
-        ({"legal", "litigation", "lawsuits", "battles"}, r"(?:item\s*3[. :]* )?legal proceedings"),
+        ({"legal", "litigation", "lawsuits", "battles"}, r"(?:item\s*3[. : ]*)?legal proceedings"),
         (
             {"geographic", "segments", "geographies", "operates"},
-            r"(?:our|reportable|operating|business) (?:segments|divisions)|item\s*1[. :]*business",
+            r"(?:our|reportable|operating|business) (?:segments|divisions)|item\s*1[. :]*business"
+            r"|(?:[a-z -]+ )?(?:(?:north|south|latin|central) america|europe|asia(?: pacific)?|africa|middle east)",
         ),
     )
     return 16.0 * sum(
@@ -402,9 +409,11 @@ async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple[Memo
         return ()
     original = set(_terms(question))
     expanded = set(original)
+    focused = set()
     for pattern, vocabulary in _CONCEPTS:
         if re.search(pattern, question.lower()):
-            expanded.update(_terms(vocabulary))
+            focused.update(_terms(vocabulary))
+    expanded.update(focused)
     # Do not let conversational repetition determine term weights or call count.
     terms = sorted(expanded)
     queries = [" ".join(terms[i : i + 16]) for i in range(0, len(terms), 16)]
@@ -417,10 +426,10 @@ async def search_pdf_pages(memory, question: str, limit: int = 10) -> tuple[Memo
             hits[key] = hit
     if not hits:
         return ()
-    return await _select_citations(memory, _rank_candidates(hits, question, original, expanded), limit)
+    return await _select_citations(memory, _rank_candidates(hits, question, expanded, focused), limit)
 
 
-def _rank_candidates(hits, question: str, original: set[str], expanded: set[str]):
+def _rank_candidates(hits, question: str, expanded: set[str], focused: set[str]):
     names = {hit.text.split("\n", 1)[0] for hit in hits.values()}
     requested = _document_matches(names, question)
     candidates = [
@@ -438,7 +447,13 @@ def _rank_candidates(hits, question: str, original: set[str], expanded: set[str]
             count = tokens[term]
             if count:
                 idf = math.log1p((len(candidates) - frequency[term] + 0.5) / (frequency[term] + 0.5))
-                weight = 1.0 if term in original else 0.5
+                # Conversational adjectives such as "important" and "ongoing"
+                # can have high IDF in an annual report without identifying the
+                # requested accounting disclosure. Explicit domain vocabulary
+                # must carry at least as much weight as the user's wording.
+                weight = 1.0 if not focused or term in focused else 0.25
+                if term.isdigit():
+                    weight *= 0.2
                 score += weight * idf * count * 2.2 / (count + norm)
         ranked.append((-score, key, hit))
     ranked.sort(key=lambda item: (item[0], item[1]))
