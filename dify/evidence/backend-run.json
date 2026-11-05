@@ -1,0 +1,348 @@
+{
+  "tested_at": "2026-11-05T16:41:25+0800",
+  "scope": "real PowerContext HTTP + gateway; deterministic test replies; no Dify or LLM execution",
+  "environment": {
+    "python": "3.12.16",
+    "os": "Windows-11-10.0.26200-SP0",
+    "powercontext_distribution": "0.1.0",
+    "powercontext_source": {
+      "url": "https://github.com/oceanbase/powercontext/archive/c4b9b540a6daa6514be83f1696e0fccf18c5c147.zip",
+      "archive_info": {}
+    }
+  },
+  "steps": [
+    {
+      "prepare_input": {
+        "user": "judge-a",
+        "player": "月亮来客",
+        "action": "prank",
+        "item": "会打嗝的月亮",
+        "request_id": "010127540b6245dab1e14fd8685ac6eb"
+      },
+      "prepare_result": {
+        "before": {
+          "turn": 0,
+          "suspicion": 0,
+          "price": 3,
+          "badge": "初来乍到"
+        },
+        "after": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memories": "没有历史记忆。不能假装认识玩家。",
+        "action": "恶作剧",
+        "item": "会打嗝的月亮",
+        "scope_id": "scp_2c8h3j75h2jnysk75mctcef6td",
+        "memory_ref": [],
+        "memory_count": 0
+      }
+    },
+    {
+      "test_reply": "测试台词：阿扣被会打嗝的月亮喷了一脸星星。",
+      "commit_result": {
+        "saved": true,
+        "duplicate": false,
+        "reply": "测试台词：阿扣被会打嗝的月亮喷了一脸星星。",
+        "state": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          }
+        ],
+        "write_result": {
+          "changed": true,
+          "records": [
+            {
+              "artifact": {
+                "family": "atomic-memory",
+                "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+                "revision": 1
+              },
+              "kind": "fact",
+              "text": "{\"game\": \"grudge-shop-v1\", \"turn\": 1, \"request_id\": \"010127540b6245dab1e14fd8685ac6eb\", \"action\": \"prank\", \"item\": \"会打嗝的月亮\", \"reply\": \"测试台词：阿扣被会打嗝的月亮喷了一脸星星。\"}",
+              "state": "active",
+              "state_version": 0,
+              "merged_into_id": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "test_reply": "重复台词不应覆盖",
+      "commit_result": {
+        "saved": true,
+        "duplicate": true,
+        "reply": "测试台词：阿扣被会打嗝的月亮喷了一脸星星。",
+        "state": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          }
+        ]
+      }
+    },
+    {
+      "prepare_input": {
+        "user": "judge-a",
+        "player": "月亮来客",
+        "action": "trade",
+        "item": "一双失眠的拖鞋",
+        "request_id": "0337101321d34177bcc6f2d19c23f36b"
+      },
+      "prepare_result": {
+        "before": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "after": {
+          "turn": 2,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memories": "第1回合 恶作剧：会打嗝的月亮",
+        "action": "交换",
+        "item": "一双失眠的拖鞋",
+        "scope_id": "scp_2c8h3j75h2jnysk75mctcef6td",
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          }
+        ],
+        "memory_count": 1
+      }
+    },
+    {
+      "prepare_input": {
+        "user": "judge-b",
+        "player": "月亮来客",
+        "action": "look",
+        "item": "看看柜台",
+        "request_id": "f259d5e298df49c797dd89f5b205001c"
+      },
+      "prepare_result": {
+        "before": {
+          "turn": 0,
+          "suspicion": 0,
+          "price": 3,
+          "badge": "初来乍到"
+        },
+        "after": {
+          "turn": 1,
+          "suspicion": 0,
+          "price": 3,
+          "badge": "熟客"
+        },
+        "memories": "没有历史记忆。不能假装认识玩家。",
+        "action": "看看",
+        "item": "看看柜台",
+        "scope_id": "scp_5d3ph8sxjcr02npmrgt6jzh10f",
+        "memory_ref": [],
+        "memory_count": 0
+      }
+    },
+    {
+      "prepare_input": {
+        "user": "judge-a",
+        "player": "月亮来客",
+        "action": "look",
+        "item": "另一张同时打开的标签页",
+        "request_id": "84482bc878c9448aa1caeef604d4faf0"
+      },
+      "prepare_result": {
+        "before": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "after": {
+          "turn": 2,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memories": "第1回合 恶作剧：会打嗝的月亮",
+        "action": "看看",
+        "item": "另一张同时打开的标签页",
+        "scope_id": "scp_2c8h3j75h2jnysk75mctcef6td",
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          }
+        ],
+        "memory_count": 1
+      }
+    },
+    {
+      "test_reply": "测试台词：月亮来客，又是你！拖鞋需要七枚纽扣。",
+      "commit_result": {
+        "saved": true,
+        "duplicate": false,
+        "reply": "测试台词：月亮来客，又是你！拖鞋需要七枚纽扣。",
+        "state": {
+          "turn": 2,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          },
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_31b066d85afb461cad86dc281ff2d7c2",
+            "revision": 1
+          }
+        ],
+        "write_result": {
+          "changed": true,
+          "records": [
+            {
+              "artifact": {
+                "family": "atomic-memory",
+                "artifact_id": "art_31b066d85afb461cad86dc281ff2d7c2",
+                "revision": 1
+              },
+              "kind": "fact",
+              "text": "{\"game\": \"grudge-shop-v1\", \"turn\": 2, \"request_id\": \"0337101321d34177bcc6f2d19c23f36b\", \"action\": \"trade\", \"item\": \"一双失眠的拖鞋\", \"reply\": \"测试台词：月亮来客，又是你！拖鞋需要七枚纽扣。\"}",
+              "state": "active",
+              "state_version": 0,
+              "merged_into_id": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stale_turn_rejected": 400
+    },
+    {
+      "prepare_input": {
+        "user": "judge-a",
+        "player": "月亮来客",
+        "action": "apologize",
+        "item": "带一颗薄荷糖来赔礼",
+        "request_id": "c1d09be1905843d7a7125b83efbe573f"
+      },
+      "prepare_result": {
+        "before": {
+          "turn": 2,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "after": {
+          "turn": 3,
+          "suspicion": 1,
+          "price": 5,
+          "badge": "熟客"
+        },
+        "memories": "第1回合 恶作剧：会打嗝的月亮\n第2回合 交换：一双失眠的拖鞋",
+        "action": "道歉",
+        "item": "带一颗薄荷糖来赔礼",
+        "scope_id": "scp_2c8h3j75h2jnysk75mctcef6td",
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          },
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_31b066d85afb461cad86dc281ff2d7c2",
+            "revision": 1
+          }
+        ],
+        "memory_count": 2
+      }
+    },
+    {
+      "test_reply": "测试台词：看在薄荷糖的份上，下回少收两枚纽扣。",
+      "commit_result": {
+        "saved": true,
+        "duplicate": false,
+        "reply": "测试台词：看在薄荷糖的份上，下回少收两枚纽扣。",
+        "state": {
+          "turn": 3,
+          "suspicion": 1,
+          "price": 5,
+          "badge": "熟客"
+        },
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_30ffaa9f772e4b618970c2e74a34ffcf",
+            "revision": 1
+          },
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_31b066d85afb461cad86dc281ff2d7c2",
+            "revision": 1
+          },
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_a29e9c183d584e96b54dc41606f0cfff",
+            "revision": 1
+          }
+        ],
+        "write_result": {
+          "changed": true,
+          "records": [
+            {
+              "artifact": {
+                "family": "atomic-memory",
+                "artifact_id": "art_a29e9c183d584e96b54dc41606f0cfff",
+                "revision": 1
+              },
+              "kind": "fact",
+              "text": "{\"game\": \"grudge-shop-v1\", \"turn\": 3, \"request_id\": \"c1d09be1905843d7a7125b83efbe573f\", \"action\": \"apologize\", \"item\": \"带一颗薄荷糖来赔礼\", \"reply\": \"测试台词：看在薄荷糖的份上，下回少收两枚纽扣。\"}",
+              "state": "active",
+              "state_version": 0,
+              "merged_into_id": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "checks": [
+    "empty archive",
+    "real memory write/readback",
+    "duplicate commit",
+    "PowerContext process restart persistence",
+    "recall changes price",
+    "player isolation",
+    "stale turn rejected",
+    "apology lowers price",
+    "unauthorized request rejected"
+  ],
+  "passed": true
+}
