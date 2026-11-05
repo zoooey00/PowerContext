@@ -162,3 +162,79 @@ async def test_disclosure_survives_conversational_distractors(tmp_path, question
         record = await memory.get(GetMemoryEntryRequest(citation=citations[0]))
         source = stored[record.entry.sources[0].source_id]
         assert source.projection(TEXT_EVIDENCE_PROJECTION_KEY)["metadata"]["page_number"] == 1
+
+
+async def test_continued_table_with_no_repeated_query_words(tmp_path):
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    texts = [
+        "Consolidated Statement of Cash Flows\nOperating cash 200\nInvesting activities",
+        "Acquisition payments (7)\nProperty purchases (12)\nTotal (19)",
+    ] + ["Working capital and operating cash estimates in sensitivity analysis. " * 4 for _ in range(28)]
+    observations = []
+    for number, text in enumerate(texts, 1):
+        page = PDFPageInput(document_id="SEABIRD_2024_10K", document_sha256="d" * 64, page_number=number, text=text)
+        observations.append(project_source_for_transport(registry, await registry.resolve(page)))
+    config, scope, stored = await persist(tmp_path, PDF_PAGE_SOURCE_DEFINITION, observations)
+    async with open_builtin_runtime(config) as runtime:
+        citations = await search_pdf_pages(
+            runtime.memory.for_scope(scope), "What is capex for Seabird in 2024?", limit=20
+        )
+        locations = set()
+        for citation in citations:
+            entry = (await runtime.memory.for_scope(scope).get(GetMemoryEntryRequest(citation=citation))).entry
+            page = stored[entry.sources[0].source_id].projection(TEXT_EVIDENCE_PROJECTION_KEY)["metadata"][
+                "page_number"
+            ]
+            locations.add(page)
+        assert len(locations) == len(citations) <= 20
+        assert {1, 2} <= locations
+
+
+async def test_large_document_identity_is_bounded_and_distinct():
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    page = PDFPageInput(document_id="财务报表|" * 2000, document_sha256="e" * 64, page_number=10**150, text="")
+    first = await registry.resolve(page)
+    second = await registry.resolve(page.model_copy(update={"page_number": page.page_number + 1}))
+    assert len(first.name) <= 256 and len(second.name) <= 256
+    assert first.name != second.name
+    assert await registry.read(first) == page
+
+
+async def test_metric_operands_and_explicit_report_year(tmp_path):
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    statements = [
+        "Consolidated Statements of Income\nNet sales 900 Cost of goods 500 Operating profit 120 "
+        "Interest expense 10 Income taxes 20 Net earnings 90 Diluted shares 30",
+        "Consolidated Balance Sheets\nCurrent assets 200 Current liabilities 100 "
+        "Total assets 600 Shareholders equity 350 Accounts receivable 60 Inventory 70 Accounts payable 80",
+        "Consolidated Statements of Cash Flows\nOperating activities cash 160 "
+        "Depreciation and amortization 25 Purchases of property plant equipment 45",
+    ]
+    observations = []
+    for year in (2023, 2024):
+        texts = statements + ["Forward-looking risks involving assets, income and cash. " * 6 for _ in range(22)]
+        for number, text in enumerate(texts, 1):
+            page = PDFPageInput(
+                document_id=f"SEABIRD_{year}_10K", document_sha256=str(year % 10) * 64, page_number=number, text=text
+            )
+            observations.append(project_source_for_transport(registry, await registry.resolve(page)))
+    config, scope, stored = await persist(tmp_path, PDF_PAGE_SOURCE_DEFINITION, observations)
+    cases = [
+        ("current ratio", {2}),
+        ("return on equity", {1, 2}),
+        ("cash conversion cycle", {1, 2}),
+        ("EPS", {1}),
+        ("EBITDA", {1, 3}),
+        ("capex", {3}),
+    ]
+    async with open_builtin_runtime(config) as runtime:
+        memory = runtime.memory.for_scope(scope)
+        for metric, required in cases:
+            citations = await search_pdf_pages(memory, f"What is {metric} for Seabird in FY2024?", limit=20)
+            locations = set()
+            for citation in citations:
+                entry = (await memory.get(GetMemoryEntryRequest(citation=citation))).entry
+                meta = stored[entry.sources[0].source_id].projection(TEXT_EVIDENCE_PROJECTION_KEY)["metadata"]
+                assert meta["document_id"] == "SEABIRD_2024_10K"
+                locations.add(meta["page_number"])
+            assert required <= locations
