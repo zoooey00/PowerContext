@@ -5,6 +5,9 @@ from pathlib import Path
 import time
 from urllib.request import Request, urlopen
 import uuid
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / '.env')
 
 url = os.environ.get('DIFY_API_URL', 'http://localhost/v1').rstrip('/')
 key = os.environ['DIFY_APP_API_KEY']

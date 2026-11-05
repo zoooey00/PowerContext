@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-11-05T11:24:20.652Z",
+  "provider": "langgenius/deepseek/deepseek",
+  "model_status": [
+    {
+      "model": "deepseek-flash",
+      "status": "active"
+    },
+    {
+      "model": "deepseek-v4-flash",
+      "status": "active"
+    },
+    {
+      "model": "deepseek-v4-flash-vision-exp",
+      "status": "active"
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "status": "active"
+    }
+  ],
+  "published_workflow": {
+    "id": "5c0f0e25-e90c-40b6-b4d6-73df45814c92",
+    "created_by": "6c4da0ac-d66a-4ea6-bce6-43ee5317241f",
+    "created_at": 1793871319,
+    "updated_by": null,
+    "updated_at": 1793871319
+  },
+  "enable_site": true,
+  "enable_api": true,
+  "entry": "https://udify.app/chat/neneiRJSfXTqgv64"
+}

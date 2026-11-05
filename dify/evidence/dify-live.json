@@ -1,0 +1,130 @@
+{
+  "tested_at": "2026-11-05T17:36:15+0800",
+  "passed": true,
+  "scope": "real Dify published Chatflow API; real provider LLM; 3 distinct conversations",
+  "runs": [
+    {
+      "input": {
+        "inputs": {
+          "player": "月亮来客"
+        },
+        "query": "恶作剧：会打嗝的月亮",
+        "response_mode": "blocking",
+        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+      },
+      "result": {
+        "event": "message",
+        "task_id": "fb69c0a0-69e2-4655-aae3-7699dfc0cb5e",
+        "id": "0cff7b2a-5527-4e54-a01e-8318b6115a62",
+        "message_id": "0cff7b2a-5527-4e54-a01e-8318b6115a62",
+        "conversation_id": "b8aedaec-6804-4aa1-a29c-15bfdbebff18",
+        "mode": "advanced-chat",
+        "answer": "哎哟，新面孔！阿扣我正拿鸡毛掸子给纸箱棱角打光呢，你就摸进来啦。听说你带了枚“会打嗝的月亮”？我这儿纽扣都竖起来看热闹了——月亮一打嗝，准把柜台震得叮当响，算你有点胆量。价钱嘛，从3跳到7，熟客价，别瞪我。不过你这一手小恶作剧，我记你一格疑心，2点，不冤。放心，我不赶人，只把最圆的纽扣先收进铁盒。来，下回合你是想挑颗会装傻的纽扣赔罪，还是再掏件怪货让我开开眼？\n\n---\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "metadata": {
+          "annotation_reply": null,
+          "retriever_resources": [],
+          "usage": {
+            "prompt_tokens": 295,
+            "prompt_unit_price": "0",
+            "prompt_price_unit": "0",
+            "prompt_price": "0",
+            "completion_tokens": 158,
+            "completion_unit_price": "0",
+            "completion_price_unit": "0",
+            "completion_price": "0",
+            "total_tokens": 453,
+            "total_price": "0",
+            "currency": "USD",
+            "latency": 2.086,
+            "time_to_first_token": 5.99,
+            "time_to_generate": 0.0
+          },
+          "reasoning": {}
+        },
+        "created_at": 1793871357
+      }
+    },
+    {
+      "input": {
+        "inputs": {
+          "player": "月亮来客"
+        },
+        "query": "交换：一双失眠的拖鞋",
+        "response_mode": "blocking",
+        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+      },
+      "result": {
+        "event": "message",
+        "task_id": "bf5a1b48-70be-417b-b3a1-8fb3700c25e0",
+        "id": "4d218404-e34c-4d52-bd48-a4b3aa11984d",
+        "message_id": "4d218404-e34c-4d52-bd48-a4b3aa11984d",
+        "conversation_id": "50a62a61-757e-4aa7-9379-2cb46285cb42",
+        "mode": "advanced-chat",
+        "answer": "哟，熟客来了。第1回合你拿“会打嗝的月亮”来闹我，我还没忘呢，这回又揣着“一双失眠的拖鞋”来交换？行，阿扣给你摆出镇店奇货：一颗只会半夜数自己影子的纽扣，外加一张越叠越薄的纸箱名片。分数不变，价钱照旧，收据系统随后会亮出来，别听拖鞋打哈欠就往我账上赖。想换就挑一件，想闹就接着来。\n建议：1. 先挑那颗数影子的纽扣，看看它半夜数到几；2. 把失眠拖鞋翻过来，找找鞋底有没有藏小纸条。\n\n---\n第 2 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "metadata": {
+          "annotation_reply": null,
+          "retriever_resources": [],
+          "usage": {
+            "prompt_tokens": 290,
+            "prompt_unit_price": "0",
+            "prompt_price_unit": "0",
+            "prompt_price": "0",
+            "completion_tokens": 151,
+            "completion_unit_price": "0",
+            "completion_price_unit": "0",
+            "completion_price": "0",
+            "total_tokens": 441,
+            "total_price": "0",
+            "currency": "USD",
+            "latency": 2.216,
+            "time_to_first_token": 4.835,
+            "time_to_generate": 0.0
+          },
+          "reasoning": {}
+        },
+        "created_at": 1793871364
+      }
+    },
+    {
+      "input": {
+        "inputs": {
+          "player": "月亮来客"
+        },
+        "query": "道歉：一颗薄荷糖",
+        "response_mode": "blocking",
+        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+      },
+      "result": {
+        "event": "message",
+        "task_id": "ff9f9a6b-3956-47a4-a633-27fccd7f537b",
+        "id": "ffd52b3e-37c1-4c4e-b9a8-69a0b36d2f57",
+        "message_id": "ffd52b3e-37c1-4c4e-b9a8-69a0b36d2f57",
+        "conversation_id": "efc95e6e-ace9-41e2-a459-89b186a65339",
+        "mode": "advanced-chat",
+        "answer": "哟，熟客回来了。上回你拿“一双失眠的拖鞋”换走我的“会打嗝的月亮”，今晚倒是揣着颗薄荷糖来道歉？糖我收下，嘴硬归嘴硬，气也消一半。不过别以为一颗糖就能把月亮那声嗝抹平，我还记着呢。看在你认错的份上，这回不涨你价，熟客价照旧五枚纽扣。下回合想继续赔礼，还是再翻翻我这儿的怪货？\n\n---\n第 3 回合 · 警惕 1/5 · 交换价 5 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "metadata": {
+          "annotation_reply": null,
+          "retriever_resources": [],
+          "usage": {
+            "prompt_tokens": 299,
+            "prompt_unit_price": "0",
+            "prompt_price_unit": "0",
+            "prompt_price": "0",
+            "completion_tokens": 111,
+            "completion_unit_price": "0",
+            "completion_price_unit": "0",
+            "completion_price": "0",
+            "total_tokens": 410,
+            "total_price": "0",
+            "currency": "USD",
+            "latency": 2.278,
+            "time_to_first_token": 5.151,
+            "time_to_generate": 0.0
+          },
+          "reasoning": {}
+        },
+        "created_at": 1793871370
+      }
+    }
+  ]
+}

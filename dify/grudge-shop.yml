@@ -1,7 +1,16 @@
 {
   "kind": "app",
   "version": "0.4.0",
-  "dependencies": [],
+  "dependencies": [
+    {
+      "current_identifier": null,
+      "type": "marketplace",
+      "value": {
+        "marketplace_plugin_unique_identifier": "langgenius/deepseek:0.0.26@bdf47cb41e9062bba00d26625d2a795c1874011d8ce64bff738c44b5a31787ea",
+        "version": null
+      }
+    }
+  ],
   "app": {
     "name": "记仇杂货铺",
     "description": "会记住你恶作剧的纸箱精。输入一句话，换一段离谱但有后果的故事。",
@@ -277,12 +286,13 @@
             "type": "llm",
             "title": "掌柜阿扣接招",
             "model": {
-              "provider": "langgenius/openai/openai",
-              "name": "gpt-4o-mini",
+              "provider": "langgenius/deepseek/deepseek",
+              "name": "deepseek-flash",
               "mode": "chat",
               "completion_params": {
                 "temperature": 0.8,
-                "max_tokens": 500
+                "max_tokens": 700,
+                "thinking": false
               }
             },
             "prompt_template": [

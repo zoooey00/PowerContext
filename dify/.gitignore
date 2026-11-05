@@ -5,3 +5,4 @@ __pycache__/
 *.db
 *.db-*
 evidence/dify-live.json
+cloudflared*.exe

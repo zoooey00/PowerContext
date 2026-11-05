@@ -1,0 +1,204 @@
+{
+  "scope": "actual Dify Cloud preview node events; request headers, signed tickets and account identifiers omitted",
+  "source": "Dify authenticated preview stream from initial successful run",
+  "workflow_elapsed_seconds": 6.569230150000294,
+  "nodes": [
+    {
+      "id": "9ccd3d62-8479-4a3c-bcea-529c79ba9546",
+      "node_id": "start",
+      "node_type": "start",
+      "title": "进店",
+      "status": "succeeded",
+      "elapsed_time": 0.000105,
+      "error": null,
+      "event": "node_finished"
+    },
+    {
+      "id": "fa0a0aab-ffcc-4684-beb0-9d429707d00c",
+      "node_id": "input",
+      "node_type": "code",
+      "title": "安全组装输入",
+      "status": "succeeded",
+      "elapsed_time": 0.186037,
+      "error": null,
+      "event": "node_finished"
+    },
+    {
+      "id": "1359f1c1-ed30-4291-b61b-89f044f147ff",
+      "node_id": "recall",
+      "node_type": "http-request",
+      "title": "PowerContext 召回与规则结算",
+      "status": "succeeded",
+      "elapsed_time": 0.834607,
+      "error": null,
+      "event": "node_finished",
+      "http_status": 200,
+      "response": {
+        "before": {
+          "turn": 0,
+          "suspicion": 0,
+          "price": 3,
+          "badge": "初来乍到"
+        },
+        "after": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memories": "没有历史记忆。不能假装认识玩家。",
+        "action": "恶作剧",
+        "item": "会打嗝的月亮",
+        "scope_id": "scp_3gs9jksa515k6ve70f777ws74y",
+        "memory_ref": [],
+        "memory_count": 0
+      }
+    },
+    {
+      "id": "41695ae1-2af0-456f-8e2d-133471a4dd34",
+      "node_id": "parse",
+      "node_type": "code",
+      "title": "检查记忆服务",
+      "status": "succeeded",
+      "elapsed_time": 0.065726,
+      "error": null,
+      "event": "node_finished",
+      "llm_context": {
+        "before": {
+          "turn": 0,
+          "suspicion": 0,
+          "price": 3,
+          "badge": "初来乍到"
+        },
+        "after": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memories": "没有历史记忆。不能假装认识玩家。",
+        "action": "恶作剧",
+        "item": "会打嗝的月亮"
+      }
+    },
+    {
+      "id": "ca8dd49b-7f93-49eb-a30f-1f952ae4af33",
+      "node_id": "npc",
+      "node_type": "llm",
+      "title": "掌柜阿扣接招",
+      "status": "succeeded",
+      "elapsed_time": 2.543209,
+      "error": null,
+      "event": "node_finished",
+      "llm_result": {
+        "text": "哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？",
+        "usage": {
+          "completion_price": "0",
+          "completion_price_unit": "0",
+          "completion_tokens": 156,
+          "completion_unit_price": "0",
+          "currency": "USD",
+          "latency": 2.539,
+          "prompt_price": "0",
+          "prompt_price_unit": "0",
+          "prompt_tokens": 295,
+          "prompt_unit_price": "0",
+          "time_to_first_token": 1.153,
+          "time_to_generate": 1.386,
+          "total_price": "0",
+          "total_tokens": 451
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "5a50063f-532f-4ddd-b57e-24d6879dcfb7",
+      "node_id": "payload",
+      "node_type": "code",
+      "title": "组装记忆写入",
+      "status": "succeeded",
+      "elapsed_time": 0.526171,
+      "error": null,
+      "event": "node_finished"
+    },
+    {
+      "id": "9bd0b59d-46ca-4f95-b84b-7637848a4f9c",
+      "node_id": "save",
+      "node_type": "http-request",
+      "title": "PowerContext 保存并读回",
+      "status": "succeeded",
+      "elapsed_time": 1.880743,
+      "error": null,
+      "event": "node_finished",
+      "http_status": 200,
+      "response": {
+        "saved": true,
+        "duplicate": false,
+        "reply": "哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？",
+        "state": {
+          "turn": 1,
+          "suspicion": 2,
+          "price": 7,
+          "badge": "熟客"
+        },
+        "memory_ref": [
+          {
+            "family": "atomic-memory",
+            "artifact_id": "art_9dd06ac6262847c7af7cd72375feb168",
+            "revision": 1
+          }
+        ],
+        "write_result": {
+          "changed": true,
+          "records": [
+            {
+              "artifact": {
+                "family": "atomic-memory",
+                "artifact_id": "art_9dd06ac6262847c7af7cd72375feb168",
+                "revision": 1
+              },
+              "kind": "fact",
+              "text": "{\"game\": \"grudge-shop-v1\", \"turn\": 1, \"request_id\": \"32de3cac-9bda-4ca3-9425-d949d61dc24b\", \"action\": \"prank\", \"item\": \"会打嗝的月亮\", \"reply\": \"哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？\"}",
+              "state": "active",
+              "state_version": 0,
+              "merged_into_id": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "95d38048-cc62-46ad-a15e-c92bca69cc92",
+      "node_id": "receipt",
+      "node_type": "code",
+      "title": "核对保存收据",
+      "status": "succeeded",
+      "elapsed_time": 0.392423,
+      "error": null,
+      "event": "node_finished",
+      "answer": "哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？\n\n---\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。"
+    },
+    {
+      "id": "2d65f2b8-5019-47b9-8d0f-2644059c8dda",
+      "node_id": "answer",
+      "node_type": "answer",
+      "title": "出店收据",
+      "status": "succeeded",
+      "elapsed_time": 0.000126,
+      "error": null,
+      "event": "node_finished",
+      "answer": "哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？\n\n---\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。"
+    },
+    {
+      "id": "32de3cac-9bda-4ca3-9425-d949d61dc24b",
+      "node_id": null,
+      "node_type": null,
+      "title": null,
+      "status": "succeeded",
+      "elapsed_time": 6.569230150000294,
+      "error": null,
+      "event": "workflow_finished",
+      "answer": "哟，新客上门！我是记仇杂货铺掌柜阿扣，专收纽扣也收小麻烦。你手里这枚“会打嗝的月亮”可真会挑时候，一打嗝就把本掌柜的灯芯吹得东倒西歪。哼，我记下了：这回合你从初来乍到混成熟客，怀疑也涨到2，价钱嘛，标牌就是7——别拿它当糖豆价。作为回礼，我把月亮塞进纽扣罐里，让它打个嗝就掉出一颗扣子，掉满七颗才放它走。下回你可以挑：拿一颗怪扣子换月亮，还是帮我把打嗝声哄小点？\n\n---\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。"
+    }
+  ]
+}
