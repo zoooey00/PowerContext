@@ -1,0 +1,11 @@
+node_modules/
+dist/
+seekdb-data/
+models/
+.env
+test-results/
+native.zip*
+native-*.bin
+repair*.bin
+public/ort/
+*.parts/

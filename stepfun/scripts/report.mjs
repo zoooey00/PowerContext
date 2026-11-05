@@ -1,0 +1,21 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {chromium} from 'playwright';
+const d=JSON.parse(await readFile('evidence/benchmark-raw.json','utf8'));
+if(d.error || !d.summary)throw new Error('Benchmark must finish successfully before publishing results');
+const f=x=>Number(x).toFixed(2),m=d.model;
+const labels={'baseline':'FP32 / WASM / B1','fp16-webgpu':'FP16 / WebGPU / B1','fp16-wasm':'FP16 / WASM / B1','int8-wasm':'INT8 / WASM / B8','int8-wasm-batch1':'INT8 / WASM / B1'};
+const table=d.summary.map(r=>[labels[r.label],f((r.label==='baseline'?m.fp32Bytes:r.label.startsWith('fp16')?m.fp16Bytes:m.q8Bytes)/1048576),f(r.embedDocsPerSecond),f(r.searchMs),f(r.e2eMs),`${f(r.recall5)}/${f(r.ndcg5)}`,`${f(r.vectorRecall5)}/${f(r.vectorNdcg5)}`]);
+const headers=['配置','模型 MiB','片段/s','DB ms','E2E ms','混合 R@5/nDCG','向量 R@5/nDCG'];
+const paragraphs=[
+['模型与量化',`Xenova/all-MiniLM-L6-v2，revision ${m.revision}，Apache-2.0，英文、384 维、mean pooling + L2 归一化。采用发布者的 FP16 浮点转换与 INT8 动态量化 ONNX 文件；未训练模型。FP32 ${m.fp32Bytes} B，FP16 ${m.fp16Bytes} B（${f(m.fp16CompressionRatio)} 倍），INT8 ${m.q8Bytes} B（${f(m.compressionRatio)} 倍）。同口径统计实际 ONNX 文件，公共 tokenizer/config 不计，逐文件 SHA-256 见 model-manifest.json。`],
+['端侧执行',`Transformers.js 3.8.1 / ONNX Runtime Web。默认 FP16 显式 device=webgpu，先 requestAdapter 再运行真实预热；失败自动 device=wasm。界面显示后端与原因；INT8 选择 WASM。模型、运行时均由本机提供，Worker 执行文档与查询推理；seekdb SDK 关闭自动 embedding。Chrome ${d.browser}，GPU Intel gen-12lp；Edge 禁用 GPU 后的自动降级及完整检索见 ui-smoke.json。浏览器外部网络请求 ${d.externalRequests.length} 次。`],
+['seekdb 与状态',`seekdb-js 1.4.0 + 嵌入式 seekdb-v1.4.0.0。独立 edge_<name>_<precision> 集合；cosine HNSW(384)、IK smart 全文索引，保存 id/embedding/document/source/model/precision。浏览器 700 字符切片、重叠 100，内容哈希 upsert；每 64 片写入，整次结束刷新并探测向量与全文可见性。hybridSearch 在数据库中取两路各 50 候选，以 RRF(k=60) 排序取前 5，客户端不融合。任务中锁定配置，切换清空结果，数据库会话操作串行。`],
+['测试条件与计时',`${d.os}，${d.cpu}，内存 ${f(d.memoryBytes/1073741824)} GiB；24 篇自编英文主题文档、24 条单相关标注查询，非通用基准。每组导入 3 次、查询 72 次取中位数；质量为均值。加载含本机 HTTP/缓存、初始化及一次预热；冷模型传输逐请求记录于 modelTransfers。E2E 从提交至 JSON 可展示（不含下一帧绘制）；下载、向量化、写入、刷新含可见性探测、查询各阶段原始值均留存。`],
+['优化与质量结论',`量化减小文件，模型复用避免重复初始化；保留 batch=1/8 对照，默认 B1。INT8 WebGPU 在本机纯向量质量异常，已从应用禁用，原始失败实验单独保留，GPU 采用 FP16。对比同一模型、后端的 B1/B8 才归因批处理；不同精度与后端组合不能归因单项优化。增量、重复导入、集合隔离在全部配置通过；浏览器界面测试另附。小测试集不能外推开放域质量。`],
+];
+const md=`# 端知 · 一页技术说明\n\n${paragraphs.map(([t,p])=>`**${t}**：${p}`).join('\n\n')}\n\n|${headers.join('|')}|\n|${headers.map(()=>'---').join('|')}|\n${table.map(r=>'|'+r.join('|')+'|').join('\n')}\n\n复现：README.md；原始日志：evidence/benchmark-raw.json；源码：worker.js / server.mjs。\n`;
+await writeFile('TECHNICAL.md',md);
+const escape=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+const html=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>端知 · 一页技术说明</title><style>@page{size:A4;margin:13mm}body{font-family:'Microsoft YaHei',sans-serif;font-size:10.4px;line-height:1.65;color:#243e35;margin:0}h1{font-size:24px;margin:0 0 3px;color:#123e32}.sub{font-size:9px;letter-spacing:1px;color:#738472;margin-bottom:18px}p{margin:9px 0}strong{color:#154d39}table{border-collapse:collapse;width:100%;font-size:9px;margin-top:15px}th{background:#163f34;color:white;font-weight:500}td,th{padding:7px 4px;border-bottom:1px solid #dce3db;text-align:left}tr:nth-child(even){background:#f0f5ec}.foot{font-size:9px;color:#738472;margin-top:14px;border-top:1px solid #dce3db;padding-top:8px}</style><h1>端知 · 本地推理知识库</h1><div class="sub">SEEKDB × 阶跃星辰 / 可复现技术说明 / 2026-11-05</div>${paragraphs.map(([t,p])=>`<p><strong>${t}</strong>　${escape(p)}</p>`).join('')}<table><tr>${headers.map(s=>`<th>${s}</th>`).join('')}</tr>${table.map(row=>`<tr>${row.map(s=>`<td>${s}</td>`).join('')}</tr>`).join('')}</table><div class="foot">复现：README.md　｜　逐次数据：evidence/benchmark-raw.json　｜　模型哈希：evidence/model-manifest.json<br>来源：https://huggingface.co/Xenova/all-MiniLM-L6-v2　｜　https://github.com/oceanbase/seekdb-js</div></html>`;
+await writeFile('TECHNICAL.html',html);
+const browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage();await page.setContent(html);await page.pdf({path:'TECHNICAL.pdf',format:'A4',printBackground:true,preferCSSPageSize:true});await browser.close();console.log('Technical artifacts generated');

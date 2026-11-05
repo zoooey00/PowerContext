@@ -1,0 +1,98 @@
+[
+  {
+    "source": "gpu.txt",
+    "text": "WebGPU accelerates neural network inference using the graphics processor. It allows parallel matrix multiplication in modern browsers."
+  },
+  {
+    "source": "wasm.txt",
+    "text": "WebAssembly is a portable binary instruction format. WASM runs embedding inference on the CPU when WebGPU is unavailable."
+  },
+  {
+    "source": "int8.txt",
+    "text": "INT8 quantization stores model weights in eight bit integers rather than thirty two bit floating point values. It reduces download size and memory consumption."
+  },
+  {
+    "source": "fp16.txt",
+    "text": "Half precision floating point uses sixteen bits per value. FP16 often speeds up GPU arithmetic with less memory than FP32."
+  },
+  {
+    "source": "rrf.txt",
+    "text": "Reciprocal rank fusion combines ranked search lists using reciprocal position scores. RRF is performed by the database hybrid search engine."
+  },
+  {
+    "source": "hnsw.txt",
+    "text": "HNSW is a graph index for approximate nearest neighbor vector search. Its search parameter trades recall against query latency."
+  },
+  {
+    "source": "bm25.txt",
+    "text": "BM25 ranks documents by term frequency and inverse document frequency with document length normalization. It is a lexical retrieval method."
+  },
+  {
+    "source": "cache.txt",
+    "text": "Browser HTTP caching and persistent model caching avoid repeated model downloads. Warm requests reuse the loaded inference session."
+  },
+  {
+    "source": "batch.txt",
+    "text": "Batch inference processes several texts in one model invocation. Padding very different sequence lengths can waste computation."
+  },
+  {
+    "source": "refresh.txt",
+    "text": "After inserting documents, refresh the vector and fulltext indexes before searching. Verify the newly imported documents are visible to both retrieval paths."
+  },
+  {
+    "source": "cosine.txt",
+    "text": "Cosine similarity measures the angle between vectors. Normalize embeddings to unit length for consistent semantic similarity comparisons."
+  },
+  {
+    "source": "worker.txt",
+    "text": "A Web Worker executes JavaScript away from the main UI thread. Moving embedding computation to a worker keeps the interface responsive."
+  },
+  {
+    "source": "privacy.txt",
+    "text": "Local browser inference computes document and query embeddings on the user device. Raw documents and vectors are stored in the local seekdb database."
+  },
+  {
+    "source": "recall.txt",
+    "text": "Recall at K is the number of relevant documents in the top K results divided by the total number of relevant documents."
+  },
+  {
+    "source": "ndcg.txt",
+    "text": "Normalized discounted cumulative gain rewards relevant documents ranked near the top. nDCG divides discounted gain by the ideal ranking gain."
+  },
+  {
+    "source": "median.txt",
+    "text": "The median is the middle value of sorted observations. Repeated latency measurements should report medians instead of the single fastest run."
+  },
+  {
+    "source": "chunk.txt",
+    "text": "Text chunking splits long documents into short passages. Overlap preserves context across adjacent passage boundaries."
+  },
+  {
+    "source": "increment.txt",
+    "text": "Incremental upsert updates existing document identifiers or inserts new ones. Content hashes make repeated imports idempotent."
+  },
+  {
+    "source": "model.txt",
+    "text": "MiniLM is a compact transformer sentence embedding model. The all MiniLM L6 v2 model produces 384 dimensional vectors and is best suited to English."
+  },
+  {
+    "source": "seekdb.txt",
+    "text": "seekdb unifies vector search, fulltext retrieval and relational storage. Database hybrid search returns a fused ranking without client side merging."
+  },
+  {
+    "source": "weather.txt",
+    "text": "Rainfall is measured with a rain gauge. A weather station records precipitation, humidity and wind speed."
+  },
+  {
+    "source": "bread.txt",
+    "text": "Bread dough rises because yeast ferments sugars and releases carbon dioxide. A warm environment supports fermentation."
+  },
+  {
+    "source": "ocean.txt",
+    "text": "Ocean tides are caused mainly by the gravitational attraction of the Moon and the Sun. Coastal tide heights vary throughout the day."
+  },
+  {
+    "source": "plants.txt",
+    "text": "Photosynthesis converts light energy into chemical energy. Plants absorb carbon dioxide and release oxygen."
+  }
+]

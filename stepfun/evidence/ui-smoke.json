@@ -1,0 +1,18 @@
+[
+  {
+    "channel": "chrome",
+    "browser": "156.0.8078.80",
+    "webgpuDisabled": false,
+    "backend": "● WEBGPU · fp16",
+    "requests": [],
+    "result": "1. 粘贴文本\nZephyrquartz browser UI verification. Local inference protects privacy and seekdb performs database hybrid search."
+  },
+  {
+    "channel": "msedge",
+    "browser": "156.0.4314.50",
+    "webgpuDisabled": true,
+    "backend": "● WASM · fp16 / 无可用 GPU adapter",
+    "requests": [],
+    "result": "1. 粘贴文本\nZephyrquartz browser UI verification. Local inference protects privacy and seekdb performs database hybrid search."
+  }
+]

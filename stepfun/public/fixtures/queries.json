@@ -1,0 +1,146 @@
+[
+  {
+    "query": "How can a browser use the graphics card for neural networks?",
+    "relevant": [
+      "gpu.txt"
+    ]
+  },
+  {
+    "query": "What fallback runs inference without a graphics adapter?",
+    "relevant": [
+      "wasm.txt"
+    ]
+  },
+  {
+    "query": "How can we reduce neural network weight storage?",
+    "relevant": [
+      "int8.txt"
+    ]
+  },
+  {
+    "query": "What floating point precision uses sixteen bits?",
+    "relevant": [
+      "fp16.txt"
+    ]
+  },
+  {
+    "query": "How are keyword and semantic rankings fused?",
+    "relevant": [
+      "rrf.txt"
+    ]
+  },
+  {
+    "query": "Which graph structure accelerates nearest neighbor search?",
+    "relevant": [
+      "hnsw.txt"
+    ]
+  },
+  {
+    "query": "Which lexical relevance algorithm normalizes document length?",
+    "relevant": [
+      "bm25.txt"
+    ]
+  },
+  {
+    "query": "How can repeated model downloads be avoided?",
+    "relevant": [
+      "cache.txt"
+    ]
+  },
+  {
+    "query": "How can we process multiple documents in one inference call?",
+    "relevant": [
+      "batch.txt"
+    ]
+  },
+  {
+    "query": "Why might newly inserted text be missing from search?",
+    "relevant": [
+      "refresh.txt"
+    ]
+  },
+  {
+    "query": "What similarity compares the direction of embeddings?",
+    "relevant": [
+      "cosine.txt"
+    ]
+  },
+  {
+    "query": "How can heavy model computation avoid freezing the interface?",
+    "relevant": [
+      "worker.txt"
+    ]
+  },
+  {
+    "query": "Where does private document embedding computation happen?",
+    "relevant": [
+      "privacy.txt"
+    ]
+  },
+  {
+    "query": "How do we measure the fraction of relevant documents retrieved?",
+    "relevant": [
+      "recall.txt"
+    ]
+  },
+  {
+    "query": "Which quality metric rewards relevant results at higher positions?",
+    "relevant": [
+      "ndcg.txt"
+    ]
+  },
+  {
+    "query": "Which latency statistic is robust to a few slow outliers?",
+    "relevant": [
+      "median.txt"
+    ]
+  },
+  {
+    "query": "Why overlap adjacent text passages?",
+    "relevant": [
+      "chunk.txt"
+    ]
+  },
+  {
+    "query": "How can duplicate imports avoid creating duplicate records?",
+    "relevant": [
+      "increment.txt"
+    ]
+  },
+  {
+    "query": "How many dimensions does the selected sentence encoder output?",
+    "relevant": [
+      "model.txt"
+    ]
+  },
+  {
+    "query": "Which database stores text and vectors and fuses retrieval?",
+    "relevant": [
+      "seekdb.txt"
+    ]
+  },
+  {
+    "query": "Which instrument measures rainfall?",
+    "relevant": [
+      "weather.txt"
+    ]
+  },
+  {
+    "query": "Why does yeast make dough rise?",
+    "relevant": [
+      "bread.txt"
+    ]
+  },
+  {
+    "query": "What causes coastal tides?",
+    "relevant": [
+      "ocean.txt"
+    ]
+  },
+  {
+    "query": "How do plants convert sunlight into stored energy?",
+    "relevant": [
+      "plants.txt"
+    ]
+  }
+]
