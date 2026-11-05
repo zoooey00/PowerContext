@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkFlow AI - 智能工作日志与周报助手</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">📋</span>
+                <h1>WorkFlow AI</h1>
+            </div>
+            <p class="subtitle">智能工作日志与周报助手 · 基于 PowerContext</p>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="logs">📝 工作日志</button>
+            <button class="tab-btn" data-tab="search">🔍 语义搜索</button>
+            <button class="tab-btn" data-tab="report">📊 周报生成</button>
+            <button class="tab-btn" data-tab="chat">💬 智能问答</button>
+        </nav>
+
+        <main class="tab-content">
+            <section id="tab-logs" class="tab-panel active">
+                <div class="panel-header">
+                    <h2>工作日志</h2>
+                    <button class="btn btn-primary" onclick="showAddLogModal()">+ 新增日志</button>
+                </div>
+                <div class="filter-bar">
+                    <select id="filter-category" onchange="loadLogs()">
+                        <option value="">全部分类</option>
+                        <option value="development">开发</option>
+                        <option value="meeting">会议</option>
+                        <option value="research">研究</option>
+                        <option value="documentation">文档</option>
+                        <option value="bugfix">Bug修复</option>
+                        <option value="review">评审</option>
+                        <option value="general">其他</option>
+                    </select>
+                    <input type="date" id="filter-date-from" onchange="loadLogs()">
+                    <input type="date" id="filter-date-to" onchange="loadLogs()">
+                </div>
+                <div id="logs-list" class="logs-list"></div>
+            </section>
+
+            <section id="tab-search" class="tab-panel">
+                <div class="panel-header">
+                    <h2>语义搜索</h2>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="输入关键词或自然语言描述..." onkeypress="if(event.key==='Enter')doSearch()">
+                    <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+                </div>
+                <div id="search-results" class="search-results"></div>
+            </section>
+
+            <section id="tab-report" class="tab-panel">
+                <div class="panel-header">
+                    <h2>周报生成</h2>
+                </div>
+                <div class="report-config">
+                    <div class="form-row">
+                        <label>开始日期</label>
+                        <input type="date" id="report-start">
+                    </div>
+                    <div class="form-row">
+                        <label>结束日期</label>
+                        <input type="date" id="report-end">
+                    </div>
+                    <div class="form-row">
+                        <label>报告风格</label>
+                        <select id="report-style">
+                            <option value="professional">专业正式</option>
+                            <option value="concise">简洁概要</option>
+                            <option value="detailed">详细完整</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateReport()">生成周报</button>
+                </div>
+                <div id="report-output" class="report-output"></div>
+            </section>
+
+            <section id="tab-chat" class="tab-panel">
+                <div class="panel-header">
+                    <h2>智能问答</h2>
+                </div>
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" placeholder="询问关于工作记录的问题..." onkeypress="if(event.key==='Enter')sendChat()">
+                        <button class="btn btn-primary" onclick="sendChat()">发送</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="add-log-modal" class="modal" style="display:none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新增工作日志</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="log-form" onsubmit="submitLog(event)">
+                <div class="form-group">
+                    <label>标题 *</label>
+                    <input type="text" id="log-title" required placeholder="简要描述工作内容">
+                </div>
+                <div class="form-group">
+                    <label>详细内容 *</label>
+                    <textarea id="log-content" required rows="5" placeholder="详细描述工作进展、成果、遇到的问题等"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="log-category">
+                            <option value="development">开发</option>
+                            <option value="meeting">会议</option>
+                            <option value="research">研究</option>
+                            <option value="documentation">文档</option>
+                            <option value="bugfix">Bug修复</option>
+                            <option value="review">评审</option>
+                            <option value="general">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="log-date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>标签（逗号分隔）</label>
+                    <input type="text" id="log-tags" placeholder="例如: 前端, React, 性能优化">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkFlow AI - 智能工作日志与周报助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --bg: #f8fafc; --card-bg: #ffffff;
+            --text: #1e293b; --text-secondary: #64748b;
+            --border: #e2e8f0; --success: #10b981;
+            --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6;
+        }
+        .app-container { max-width: 960px; margin: 0 auto; padding: 20px; }
+        .app-header { text-align: center; padding: 30px 0 20px; }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+        .logo-icon { font-size: 32px; }
+        .logo h1 { font-size: 28px; font-weight: 700; color: var(--primary); }
+        .subtitle { color: var(--text-secondary); font-size: 14px; }
+        .tab-nav {
+            display: flex; gap: 4px; background: var(--card-bg);
+            padding: 4px; border-radius: var(--radius);
+            box-shadow: var(--shadow); margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1; padding: 12px 16px; border: none; background: transparent;
+            border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); transition: all 0.2s;
+        }
+        .tab-btn:hover { background: var(--bg); color: var(--text); }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .panel-header h2 { font-size: 20px; font-weight: 600; }
+        .btn {
+            padding: 10px 20px; border: 1px solid var(--border); border-radius: 6px;
+            background: var(--card-bg); cursor: pointer; font-size: 14px; font-weight: 500;
+        }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { color: #ef4444; border-color: #ef4444; }
+        .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-bar select, .filter-bar input {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 14px; background: var(--card-bg);
+        }
+        .logs-list { display: flex; flex-direction: column; gap: 12px; }
+        .log-card {
+            background: var(--card-bg); border-radius: var(--radius); padding: 16px;
+            box-shadow: var(--shadow); border-left: 4px solid var(--primary);
+        }
+        .log-card-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .log-card-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .log-card-date { font-size: 12px; color: var(--text-secondary); }
+        .log-card-category {
+            font-size: 11px; padding: 2px 8px; border-radius: 12px;
+            background: #e0e7ff; color: var(--primary); font-weight: 500;
+        }
+        .log-card-content { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; white-space: pre-wrap; }
+        .tag {
+            font-size: 11px; padding: 2px 8px; border-radius: 12px;
+            background: #f1f5f9; color: var(--text-secondary); margin-right: 4px;
+        }
+        .log-card-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .log-card-actions button { font-size: 12px; padding: 4px 12px; }
+        .search-box { display: flex; gap: 12px; margin-bottom: 20px; }
+        .search-box input {
+            flex: 1; padding: 12px 16px; border: 1px solid var(--border);
+            border-radius: var(--radius); font-size: 15px; background: var(--card-bg);
+        }
+        .search-results { display: flex; flex-direction: column; gap: 12px; }
+        .search-result-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 16px; box-shadow: var(--shadow);
+        }
+        .search-result-score { font-size: 12px; color: var(--success); font-weight: 500; }
+        .report-config {
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px;
+        }
+        .form-row { display: flex; gap: 16px; margin-bottom: 12px; align-items: center; }
+        .form-group { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 14px; background: var(--card-bg); font-family: inherit;
+        }
+        .report-output {
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 24px; box-shadow: var(--shadow); white-space: pre-wrap;
+            line-height: 1.8; font-size: 14px; min-height: 200px;
+        }
+        .chat-container { display: flex; flex-direction: column; height: 500px; }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 16px; background: var(--card-bg);
+            border-radius: var(--radius); box-shadow: var(--shadow);
+            margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;
+        }
+        .chat-message {
+            max-width: 80%; padding: 12px 16px; border-radius: 12px;
+            font-size: 14px; line-height: 1.6; white-space: pre-wrap;
+        }
+        .chat-message.user {
+            align-self: flex-end; background: var(--primary); color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-message.bot {
+            align-self: flex-start; background: #f1f5f9; color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+        .chat-input-box { display: flex; gap: 12px; }
+        .chat-input-box input {
+            flex: 1; padding: 12px 16px; border: 1px solid var(--border);
+            border-radius: var(--radius); font-size: 14px; background: var(--card-bg);
+        }
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); display: flex;
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 24px; width: 90%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 18px; font-weight: 600; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            padding: 12px 20px; border-radius: var(--radius); background: var(--card-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px;
+        }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .stat-item {
+            background: var(--card-bg); padding: 12px 20px; border-radius: var(--radius);
+            box-shadow: var(--shadow); text-align: center;
+        }
+        .stat-item .stat-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .stat-item .stat-label { font-size: 12px; color: var(--text-secondary); }
+        .info-banner {
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius);
+            padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #1e40af;
+        }
+        @media (max-width: 640px) {
+            .app-container { padding: 12px; }
+            .tab-btn { font-size: 12px; padding: 10px 8px; }
+            .form-row { flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">📋</span>
+                <h1>WorkFlow AI</h1>
+            </div>
+            <p class="subtitle">智能工作日志与周报助手 · 基于 PowerContext</p>
+        </header>
+
+        <div class="info-banner">
+            💡 这是演示版本，数据存储在浏览器本地。完整版本支持 PowerContext 语义搜索和后端服务。
+            <a href="https://github.com/zoooey00/PowerContext/tree/2026-competition-ecosystem/qoder/workflow-ai" target="_blank">查看完整代码 →</a>
+        </div>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="logs">📝 工作日志</button>
+            <button class="tab-btn" data-tab="search">🔍 语义搜索</button>
+            <button class="tab-btn" data-tab="report">📊 周报生成</button>
+            <button class="tab-btn" data-tab="chat">💬 智能问答</button>
+        </nav>
+
+        <main>
+            <section id="tab-logs" class="tab-panel active">
+                <div class="panel-header">
+                    <h2>工作日志</h2>
+                    <button class="btn btn-primary" onclick="showAddLogModal()">+ 新增日志</button>
+                </div>
+                <div class="filter-bar">
+                    <select id="filter-category" onchange="loadLogs()">
+                        <option value="">全部分类</option>
+                        <option value="development">开发</option>
+                        <option value="meeting">会议</option>
+                        <option value="research">研究</option>
+                        <option value="documentation">文档</option>
+                        <option value="bugfix">Bug修复</option>
+                        <option value="review">评审</option>
+                        <option value="general">其他</option>
+                    </select>
+                </div>
+                <div id="logs-list" class="logs-list"></div>
+            </section>
+
+            <section id="tab-search" class="tab-panel">
+                <div class="panel-header"><h2>语义搜索</h2></div>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="输入关键词或自然语言描述..." onkeypress="if(event.key==='Enter')doSearch()">
+                    <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+                </div>
+                <div id="search-results" class="search-results"></div>
+            </section>
+
+            <section id="tab-report" class="tab-panel">
+                <div class="panel-header"><h2>周报生成</h2></div>
+                <div class="report-config">
+                    <div class="form-row">
+                        <div class="form-group"><label>开始日期</label><input type="date" id="report-start"></div>
+                        <div class="form-group"><label>结束日期</label><input type="date" id="report-end"></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateReport()" style="margin-top:12px;">生成周报</button>
+                </div>
+                <div id="report-output" class="report-output"></div>
+            </section>
+
+            <section id="tab-chat" class="tab-panel">
+                <div class="panel-header"><h2>智能问答</h2></div>
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-box">
+                        <input type="text" id="chat-input" placeholder="询问关于工作记录的问题..." onkeypress="if(event.key==='Enter')sendChat()">
+                        <button class="btn btn-primary" onclick="sendChat()">发送</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="add-log-modal" class="modal" style="display:none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新增工作日志</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="log-form" onsubmit="submitLog(event)">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label>标题 *</label>
+                    <input type="text" id="log-title" required placeholder="简要描述工作内容">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label>详细内容 *</label>
+                    <textarea id="log-content" required rows="5" placeholder="详细描述工作进展、成果、遇到的问题等"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="log-category">
+                            <option value="development">开发</option>
+                            <option value="meeting">会议</option>
+                            <option value="research">研究</option>
+                            <option value="documentation">文档</option>
+                            <option value="bugfix">Bug修复</option>
+                            <option value="review">评审</option>
+                            <option value="general">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="log-date">
+                    </div>
+                </div>
+                <div class="form-group" style="margin:12px 0;">
+                    <label>标签（逗号分隔）</label>
+                    <input type="text" id="log-tags" placeholder="例如: 前端, React, 性能优化">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        const STORAGE_KEY = 'workflow_ai_logs';
+        const categoryLabels = {
+            development: '开发', meeting: '会议', research: '研究',
+            documentation: '文档', bugfix: 'Bug修复', review: '评审', general: '其他'
+        };
+
+        function getLogs() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+            catch { return []; }
+        }
+        function saveLogs(logs) { localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); }
+
+        function initSampleData() {
+            if (getLogs().length > 0) return;
+            const today = new Date();
+            const fmt = d => d.toISOString().split('T')[0];
+            const samples = [
+                { id: 1, title: '完成用户登录模块开发', content: '实现了 JWT 认证、OAuth2 集成、登录页面 UI 开发。修复了 token 过期刷新的问题。', category: 'development', tags: ['后端', '认证', 'JWT'], date: fmt(new Date(today - 86400000*2)) },
+                { id: 2, title: '参加产品需求评审会', content: '讨论了 Q3 产品路线图，确定了三个优先级最高的功能需求。负责用户权限模块的设计。', category: 'meeting', tags: ['产品', '需求'], date: fmt(new Date(today - 86400000)) },
+                { id: 3, title: '研究 PowerContext 集成方案', content: '调研了 PowerContext 的 Memory 和 Search API，设计了工作日志的语义存储方案。完成了原型验证。', category: 'research', tags: ['PowerContext', 'AI', '语义搜索'], date: fmt(today) },
+                { id: 4, title: '编写 API 接口文档', content: '完成了所有 REST API 的文档编写，包括请求/响应格式、错误码说明和使用示例。', category: 'documentation', tags: ['文档', 'API'], date: fmt(today) },
+                { id: 5, title: '修复前端页面兼容性问题', content: '解决了 Safari 浏览器下的样式显示问题，优化了移动端响应式布局。', category: 'bugfix', tags: ['前端', '兼容性'], date: fmt(new Date(today - 86400000*3)) },
+            ];
+            saveLogs(samples);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSampleData();
+            initTabs();
+            setDefaultDates();
+            loadLogs();
+            addWelcomeMessage();
+        });
+
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+            const fmt = d => d.toISOString().split('T')[0];
+            document.getElementById('log-date').value = fmt(today);
+            document.getElementById('report-start').value = fmt(weekAgo);
+            document.getElementById('report-end').value = fmt(today);
+        }
+
+        function loadLogs() {
+            const container = document.getElementById('logs-list');
+            const category = document.getElementById('filter-category').value;
+            let logs = getLogs();
+            if (category) logs = logs.filter(l => l.category === category);
+            logs.sort((a, b) => b.date.localeCompare(a.date));
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>暂无工作日志</p><small>点击「+ 新增日志」开始记录</small></div>';
+                return;
+            }
+            container.innerHTML = logs.map(log => renderLogCard(log)).join('');
+        }
+
+        function renderLogCard(log) {
+            const tags = (log.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('');
+            return '<div class="log-card">' +
+                '<div class="log-card-title">' + escapeHtml(log.title) + '</div>' +
+                '<div class="log-card-meta">' +
+                '<span class="log-card-date">' + log.date + '</span>' +
+                '<span class="log-card-category">' + (categoryLabels[log.category] || log.category) + '</span>' +
+                '</div>' +
+                '<div class="log-card-content">' + escapeHtml(log.content) + '</div>' +
+                (tags ? '<div>' + tags + '</div>' : '') +
+                '<div class="log-card-actions"><button class="btn btn-danger" onclick="deleteLog(' + log.id + ')">删除</button></div>' +
+                '</div>';
+        }
+
+        function showAddLogModal() {
+            document.getElementById('add-log-modal').style.display = 'flex';
+            document.getElementById('log-form').reset();
+            document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+        }
+        function closeModal() { document.getElementById('add-log-modal').style.display = 'none'; }
+
+        function submitLog(e) {
+            e.preventDefault();
+            const logs = getLogs();
+            const newLog = {
+                id: Date.now(),
+                title: document.getElementById('log-title').value.trim(),
+                content: document.getElementById('log-content').value.trim(),
+                category: document.getElementById('log-category').value,
+                date: document.getElementById('log-date').value,
+                tags: document.getElementById('log-tags').value.split(/[,，]/).map(t => t.trim()).filter(Boolean)
+            };
+            logs.push(newLog);
+            saveLogs(logs);
+            closeModal();
+            showToast('日志保存成功', 'success');
+            loadLogs();
+        }
+
+        function deleteLog(id) {
+            if (!confirm('确定要删除这条日志吗？')) return;
+            saveLogs(getLogs().filter(l => l.id !== id));
+            showToast('已删除', 'success');
+            loadLogs();
+        }
+
+        function doSearch() {
+            const query = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!query) return;
+            const container = document.getElementById('search-results');
+            const logs = getLogs();
+            const results = logs.map(log => {
+                let score = 0;
+                if (log.title.toLowerCase().includes(query)) score += 10;
+                if (log.content.toLowerCase().includes(query)) score += 5;
+                if (log.category.toLowerCase().includes(query)) score += 3;
+                (log.tags || []).forEach(t => { if (t.toLowerCase().includes(query)) score += 2; });
+                return { ...log, score };
+            }).filter(r => r.score > 0).sort((a, b) => b.score - a.score);
+
+            if (results.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>未找到相关结果</p></div>';
+                return;
+            }
+            container.innerHTML = results.map(r =>
+                '<div class="search-result-card">' +
+                '<div class="log-card-title">' + escapeHtml(r.title) + '</div>' +
+                '<div class="log-card-meta"><span class="log-card-date">' + r.date + '</span>' +
+                '<span class="search-result-score">相关度: ' + r.score.toFixed(0) + '</span></div>' +
+                '<div class="log-card-content">' + escapeHtml(r.content) + '</div></div>'
+            ).join('');
+        }
+
+        function generateReport() {
+            const startDate = document.getElementById('report-start').value;
+            const endDate = document.getElementById('report-end').value;
+            if (!startDate || !endDate) { showToast('请选择日期范围', 'error'); return; }
+
+            const logs = getLogs().filter(l => l.date >= startDate && l.date <= endDate).sort((a, b) => a.date.localeCompare(b.date));
+            const output = document.getElementById('report-output');
+
+            if (logs.length === 0) {
+                output.innerHTML = '<div class="empty-state"><p>所选日期范围内暂无工作记录</p></div>';
+                return;
+            }
+
+            const categories = {};
+            logs.forEach(l => { categories[l.category] = (categories[l.category] || 0) + 1; });
+            const uniqueDates = new Set(logs.map(l => l.date));
+            const topCat = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+
+            let html = '<div class="stats-bar">';
+            html += '<div class="stat-item"><div class="stat-value">' + logs.length + '</div><div class="stat-label">工作记录</div></div>';
+            html += '<div class="stat-item"><div class="stat-value">' + uniqueDates.size + '</div><div class="stat-label">活跃天数</div></div>';
+            html += '</div>';
+
+            html += '<div style="margin-bottom:16px;padding:12px;background:#f0fdf4;border-radius:6px;font-size:14px;">';
+            html += '<strong>摘要：</strong>本周共完成 ' + logs.length + ' 项工作记录，活跃工作 ' + uniqueDates.size + ' 天。';
+            html += '主要工作集中在 ' + (categoryLabels[topCat[0]] || topCat[0]) + ' 方向（' + topCat[1] + ' 条）。</div>';
+
+            html += '<h3 style="margin:16px 0 8px;">工作分类统计</h3><ul style="margin:8px 0;padding-left:20px;">';
+            Object.entries(categories).sort((a, b) => b[1] - a[1]).forEach(([cat, count]) => {
+                html += '<li><strong>' + (categoryLabels[cat] || cat) + '</strong>: ' + count + ' 条</li>';
+            });
+            html += '</ul>';
+
+            html += '<h3 style="margin:16px 0 8px;">详细工作内容</h3>';
+            let currentDate = null;
+            logs.forEach(log => {
+                if (log.date !== currentDate) {
+                    currentDate = log.date;
+                    html += '<h4 style="margin:12px 0 4px;">' + currentDate + '</h4>';
+                }
+                html += '<div style="margin:8px 0;padding:8px;background:#f8fafc;border-radius:4px;">';
+                html += '<strong>' + escapeHtml(log.title) + '</strong> [' + (categoryLabels[log.category] || log.category) + ']';
+                if (log.tags && log.tags.length) html += ' <span style="font-size:12px;color:#64748b;">' + log.tags.join(', ') + '</span>';
+                html += '<div style="font-size:13px;color:#64748b;margin-top:4px;">' + escapeHtml(log.content) + '</div></div>';
+            });
+
+            html += '<h3 style="margin:16px 0 8px;">下周计划</h3><p style="color:#64748b;">（请根据本周工作进展，补充下周工作计划）</p>';
+            output.innerHTML = html;
+        }
+
+        function addWelcomeMessage() {
+            document.getElementById('chat-messages').innerHTML =
+                '<div class="chat-message bot">你好！我是 WorkFlow AI 助手。你可以问我关于工作记录的问题，例如：\n- "这周做了多少工作？"\n- "最近的工作记录"\n- "总结一下我的工作"\n- "关于前端开发的工作"</div>';
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const container = document.getElementById('chat-messages');
+            container.innerHTML += '<div class="chat-message user">' + escapeHtml(question) + '</div>';
+            input.value = '';
+
+            const logs = getLogs();
+            const q = question.toLowerCase();
+            let answer = '';
+
+            if (q.includes('多少') || q.includes('数量') || q.includes('统计')) {
+                const cats = {};
+                logs.forEach(l => { cats[l.category] = (cats[l.category] || 0) + 1; });
+                const dates = new Set(logs.map(l => l.date));
+                answer = '根据记录，您共有 ' + logs.length + ' 条工作日志，活跃工作 ' + dates.size + ' 天。\n分类统计：' +
+                    Object.entries(cats).map(([k, v]) => (categoryLabels[k] || k) + ' ' + v + ' 条').join('、') + '。';
+            } else if (q.includes('最近') || q.includes('最新')) {
+                const recent = logs.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+                answer = '最近的工作记录：\n' + recent.map(l => '- [' + l.date + '] ' + l.title).join('\n');
+            } else if (q.includes('总结') || q.includes('概括')) {
+                const cats = {};
+                logs.forEach(l => { cats[l.category] = (cats[l.category] || 0) + 1; });
+                const parts = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([k, v]) => (categoryLabels[k] || k) + ' 方向 ' + v + ' 项工作');
+                answer = '工作概况：共 ' + logs.length + ' 条记录，主要包括' + parts.join('、') + '。';
+            } else {
+                const relevant = logs.filter(l =>
+                    l.title.toLowerCase().includes(q) || l.content.toLowerCase().includes(q) ||
+                    (l.tags || []).some(t => t.toLowerCase().includes(q))
+                );
+                if (relevant.length > 0) {
+                    answer = '找到 ' + relevant.length + ' 条相关工作记录：\n' +
+                        relevant.slice(0, 5).map(l => '- [' + l.date + '] ' + l.title + ': ' + l.content.substring(0, 80)).join('\n');
+                } else {
+                    answer = '未找到与"' + question + '"直接相关的记录。以下是最近的工作记录：\n' +
+                        logs.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(l => '- [' + l.date + '] ' + l.title).join('\n');
+                }
+            }
+
+            container.innerHTML += '<div class="chat-message bot">' + escapeHtml(answer) + '</div>';
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
