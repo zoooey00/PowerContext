@@ -1,0 +1,41 @@
+
+Inference capability notice
+δ���û�δ�������� PowerContext Server ����ģ�ͣ�generation model �� embedding model����
+����Ӱ�첿����Ʒ���ܡ�����Ӱ�췶Χ�����÷�ʽ��ο� PowerContext ��������˵����
+https://powercontext.oceanbase.io/en/docs/reference/configuration/
+2026-11-05T20:09:43+0800 INFO uvicorn Started server process [36152] service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:43+0800 INFO uvicorn Waiting for application startup. service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:43+0800 INFO powercontext.server.factory PowerContext Server is starting event="server.starting" unit="server" service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:50+0800 INFO powercontext.builtin.runtime.composition Artifact processing configuration event="artifact_processing.configured" mode="global" service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:50+0800 INFO powercontext.server.factory PowerContext Server is ready event="server.ready" unit="server" service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:50+0800 INFO uvicorn Application startup complete. service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:09:50+0800 INFO uvicorn Uvicorn running on http://127.0.0.1:53394 (Press CTRL+C to quit) service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     Started server process [56856]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:53393 (Press CTRL+C to quit)
+2026-11-05T20:09:54+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="create_scope" outcome="success" transport="http" unit="transport" duration_ms=27.70580002106726 status_code=201 request_id=498dfefa0ff19407 trace_id=97e586ff191ca38399bbf22673150808 span_id=498dfefa0ff19407 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:63953 - "GET /api/health HTTP/1.1" 200 OK
+WorkFlow AI: http://127.0.0.1:53393 �����û��������У�
+INFO:     127.0.0.1:63955 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51709 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62979 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56065 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62979 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56065 - "GET /api/work-logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56065 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+2026-11-05T20:10:00+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="remember_memory" outcome="success" transport="http" unit="transport" duration_ms=1455.3948000539094 status_code=200 request_id=64c0e79fff2782a8 trace_id=3e60754f7dc9f34289fc80e5bd49c216 span_id=64c0e79fff2782a8 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:49947 - "POST /api/work-logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49947 - "GET /api/work-logs HTTP/1.1" 200 OK
+2026-11-05T20:10:00+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="search_memory" outcome="success" transport="http" unit="transport" duration_ms=43.54990005958825 status_code=200 request_id=d48db7041ea60c24 trace_id=6981bdebdd23b5bfef9c5a3d34ddf283 span_id=d48db7041ea60c24 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:49947 - "GET /api/search?query=JWT HTTP/1.1" 200 OK
+2026-11-05T20:10:00+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="search_memory" outcome="success" transport="http" unit="transport" duration_ms=27.007099939510226 status_code=200 request_id=d3e127a9f7ed0c1d trace_id=a4a2d4bed478e137131e7dad8fdd1bad span_id=d3e127a9f7ed0c1d service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:10:00+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="prepare_context" outcome="success" transport="http" unit="transport" duration_ms=77.91629992425442 status_code=200 request_id=c9e62066a91252d1 trace_id=c3cb1ff5355e16a850b0975c6f642647 span_id=c9e62066a91252d1 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:49947 - "POST /api/weekly-report HTTP/1.1" 200 OK
+2026-11-05T20:10:01+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="search_memory" outcome="success" transport="http" unit="transport" duration_ms=28.919200063683093 status_code=200 request_id=df0ec72b038c6471 trace_id=fe57e72993d7f77a8fe98689506ac5cb span_id=df0ec72b038c6471 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:49947 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49947 - "GET /api/work-logs/1 HTTP/1.1" 200 OK
+2026-11-05T20:10:01+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="remember_memory" outcome="success" transport="http" unit="transport" duration_ms=96.1517000105232 status_code=200 request_id=2e81b67e5ad70541 trace_id=3330914374113dbb309b1357f4ba1fe1 span_id=2e81b67e5ad70541 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+2026-11-05T20:10:01+0800 INFO powercontext.server.access PowerContext transport request completed event="transport.request.completed" operation="change_atomic_memory_lifecycle" outcome="success" transport="http" unit="transport" duration_ms=75.65020001493394 status_code=200 request_id=ebe492bd15a7ee12 trace_id=7c684bac9840eb0df9c53b9f666c4c5a span_id=ebe492bd15a7ee12 service_name="powercontext-server" service_version="0.1.0" service_instance_id="1b666cc2db25441c8282737dd4615f46" service_role="all"
+INFO:     127.0.0.1:49947 - "PUT /api/work-logs/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49947 - "GET /api/work-logs HTTP/1.1" 200 OK

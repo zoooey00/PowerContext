@@ -32,6 +32,9 @@ async def init_db():
         """)
         await db.commit()
 
+        await db.execute('CREATE TABLE IF NOT EXISTS memory_refs (log_id INTEGER PRIMARY KEY, record TEXT NOT NULL)')
+        await db.commit()
+
 
 async def create_work_log(title: str, content: str, category: str, tags: list, date: str) -> int:
     now = datetime.now().isoformat()
@@ -170,13 +173,33 @@ async def get_statistics(start_date: str, end_date: str) -> dict:
             categories[row[2]] = row[0]
 
         cursor2 = await db.execute(
-            "SELECT COUNT(*) FROM work_logs WHERE date >= ? AND date <= ?",
+            "SELECT COUNT(*), COUNT(DISTINCT date) FROM work_logs WHERE date >= ? AND date <= ?",
             (start_date, end_date)
         )
-        total = (await cursor2.fetchone())[0]
+        total, active_days = await cursor2.fetchone()
 
         return {
             "total_logs": total,
             "active_days": active_days,
             "categories": categories
         }
+
+
+async def save_memory_ref(log_id: int, record: dict):
+    import json
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        await db.execute('INSERT OR REPLACE INTO memory_refs VALUES (?, ?)', (log_id, json.dumps(record)))
+        await db.commit()
+
+
+async def get_memory_ref(log_id: int) -> dict | None:
+    import json
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        row = await (await db.execute('SELECT record FROM memory_refs WHERE log_id=?', (log_id,))).fetchone()
+        return json.loads(row[0]) if row else None
+
+
+async def remove_memory_ref(log_id: int):
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        await db.execute('DELETE FROM memory_refs WHERE log_id=?', (log_id,))
+        await db.commit()

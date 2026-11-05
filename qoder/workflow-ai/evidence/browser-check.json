@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "UI creates log and displays memory reference",
+    "UI search receives memory hit",
+    "UI report displays actual recall citations",
+    "UI chat includes source reference",
+    "UI edits log and updates rendered content",
+    "HTML in tags and report stays inert"
+  ],
+  "mobile_overflow": false,
+  "checked_at": "2026-11-05T12:10:02.088Z",
+  "errors": []
+}

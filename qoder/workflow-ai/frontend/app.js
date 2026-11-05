@@ -1,6 +1,41 @@
 const API_BASE = '';
+let editingLogId = null;
+async function apiRequest(url, options) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(typeof data.detail === 'string' ? data.detail : '请求失败：HTTP ' + response.status);
+    }
+    return response;
+}
+async function loadHealth() {
+    const banner = document.getElementById('memory-status');
+    try {
+        const data = await (await apiRequest('/api/health')).json();
+        banner.textContent = data.powercontext.status === 'healthy'
+            ? 'PowerContext 已连接 · 检索模式：' + data.powercontext.search_mode + ' · 日志保存后可跨会话召回'
+            : 'PowerContext 未就绪。保存、检索与周报将明确报错，请检查服务。';
+    } catch (err) { banner.textContent = err.message; }
+}
+async function editLog(id) {
+    try {
+        const log = await (await apiRequest('/api/work-logs/' + id)).json();
+        showAddLogModal(); editingLogId = id;
+        document.getElementById('log-title').value = log.title;
+        document.getElementById('log-content').value = log.content;
+        document.getElementById('log-category').value = log.category;
+        document.getElementById('log-tags').value = log.tags.join(', ');
+        document.getElementById('log-date').value = log.date;
+        document.getElementById('log-date').disabled = true;
+    } catch (err) { showToast(err.message, 'error'); }
+}
+async function syncLog(id) {
+    try { await apiRequest('/api/work-logs/' + id + '/sync', {method:'POST'}); loadLogs(); }
+    catch (err) { showToast(err.message, 'error'); }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadHealth();
     initTabs();
     setDefaultDates();
     loadLogs();
@@ -23,7 +58,7 @@ function setDefaultDates() {
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
 
-    const fmt = d => d.toISOString().split('T')[0];
+    const fmt = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
 
     const dateInput = document.getElementById('log-date');
     if (dateInput) dateInput.value = fmt(today);
@@ -48,7 +83,7 @@ async function loadLogs() {
     if (dateTo) params.set('date_to', dateTo);
 
     try {
-        const resp = await fetch(`${API_BASE}/api/work-logs?${params}`);
+        const resp = await apiRequest(`${API_BASE}/api/work-logs?${params}`);
         const logs = await resp.json();
 
         if (logs.length === 0) {
@@ -71,7 +106,7 @@ function renderLogCard(log) {
         development: '开发', meeting: '会议', research: '研究',
         documentation: '文档', bugfix: 'Bug修复', review: '评审', general: '其他'
     };
-    const tags = (log.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    const tags = (log.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
     return `
         <div class="log-card">
             <div class="log-card-header">
@@ -79,22 +114,26 @@ function renderLogCard(log) {
                     <div class="log-card-title">${escapeHtml(log.title)}</div>
                     <div class="log-card-meta">
                         <span class="log-card-date">${log.date}</span>
-                        <span class="log-card-category">${categoryLabels[log.category] || log.category}</span>
+                        <span class="log-card-category">${escapeHtml(categoryLabels[log.category] || log.category)}</span>
                     </div>
                 </div>
             </div>
             <div class="log-card-content">${escapeHtml(log.content)}</div>
             ${tags ? `<div class="log-card-tags">${tags}</div>` : ''}
+            <small>${log.memory_ref ? escapeHtml(log.memory_ref.family + '/' + log.memory_ref.artifact_id + '@' + log.memory_ref.revision) : '尚未同步到 PowerContext'}</small>
             <div class="log-card-actions">
+                <button class="btn" onclick="editLog(${log.id})">编辑</button>
+                ${!log.memory_ref ? `<button class="btn" onclick="syncLog(${log.id})">同步记忆</button>` : ''}
                 <button class="btn btn-danger" onclick="deleteLog(${log.id})">删除</button>
             </div>
         </div>`;
 }
 
 function showAddLogModal() {
+    editingLogId = null; document.getElementById('log-date').disabled = false;
     document.getElementById('add-log-modal').style.display = 'flex';
     document.getElementById('log-form').reset();
-    document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('log-date').value = new Date().toLocaleDateString('sv-SE');
 }
 
 function closeModal() {
@@ -111,8 +150,8 @@ async function submitLog(e) {
     const tags = tagsStr ? tagsStr.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
 
     try {
-        const resp = await fetch(`${API_BASE}/api/work-logs`, {
-            method: 'POST',
+        const resp = await apiRequest(`${API_BASE}/api/work-logs${editingLogId ? '/' + editingLogId : ''}`, {
+            method: editingLogId ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, content, category, tags, date })
         });
@@ -126,18 +165,18 @@ async function submitLog(e) {
             showToast(`保存失败: ${err.detail || '未知错误'}`, 'error');
         }
     } catch (err) {
-        showToast('保存失败，请检查后端服务', 'error');
+        showToast(err.message, 'error');
     }
 }
 
 async function deleteLog(id) {
     if (!confirm('确定要删除这条日志吗？')) return;
     try {
-        await fetch(`${API_BASE}/api/work-logs/${id}`, { method: 'DELETE' });
+        await apiRequest(`${API_BASE}/api/work-logs/${id}`, { method: 'DELETE' });
         showToast('已删除', 'success');
         loadLogs();
     } catch (err) {
-        showToast('删除失败', 'error');
+        showToast(err.message, 'error');
     }
 }
 
@@ -149,7 +188,7 @@ async function doSearch() {
     container.innerHTML = '<div class="loading">搜索中...</div>';
 
     try {
-        const resp = await fetch(`${API_BASE}/api/search?query=${encodeURIComponent(query)}`);
+        const resp = await apiRequest(`${API_BASE}/api/search?query=${encodeURIComponent(query)}`);
         const results = await resp.json();
 
         if (results.length === 0) {
@@ -168,11 +207,11 @@ async function doSearch() {
                         </div>
                     </div>
                 </div>
-                <div class="log-card-content">${escapeHtml(r.content)}</div>
+                <div class="log-card-content">${escapeHtml(r.content)}</div><small>记忆引用：${escapeHtml(JSON.stringify(r.memory_ref))}</small>
             </div>
         `).join('');
     } catch (err) {
-        container.innerHTML = '<div class="empty-state"><p>搜索失败</p></div>';
+        container.innerHTML = '<div class="empty-state"><p>' + escapeHtml(err.message) + '</p></div>';
     }
 }
 
@@ -190,7 +229,7 @@ async function generateReport() {
     output.innerHTML = '<div class="loading">正在生成周报...</div>';
 
     try {
-        const resp = await fetch(`${API_BASE}/api/weekly-report`, {
+        const resp = await apiRequest(`${API_BASE}/api/weekly-report`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ start_date: startDate, end_date: endDate, style })
@@ -211,15 +250,15 @@ async function generateReport() {
             <div style="margin-bottom:16px;padding:12px;background:#f0fdf4;border-radius:6px;font-size:14px;">
                 <strong>摘要：</strong>${escapeHtml(data.summary)}
             </div>
-            <div>${formatReport(data.report)}</div>
+            <div class="report-text">${formatReport(data.report)}</div><details><summary>查看 PowerContext 上下文与记忆依据</summary><p>以下为历史召回证据，可能含周期外记忆；报告只使用所选周期日志。</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeHtml(JSON.stringify({evidence:data.memory_evidence, context:data.memory_context}, null, 2))}</pre></details>
         `;
     } catch (err) {
-        output.innerHTML = '<div class="empty-state"><p>生成失败</p></div>';
+        output.innerHTML = '<div class="empty-state"><p>' + escapeHtml(err.message) + '</p></div>';
     }
 }
 
 function formatReport(text) {
-    return text
+    return escapeHtml(text)
         .replace(/^# (.+)$/gm, '<h2>$1</h2>')
         .replace(/^## (.+)$/gm, '<h3>$1</h3>')
         .replace(/^### (.+)$/gm, '<h4>$1</h4>')
@@ -233,7 +272,7 @@ function formatReport(text) {
 function addWelcomeMessage() {
     const container = document.getElementById('chat-messages');
     container.innerHTML = `
-        <div class="chat-message bot">你好！我是 WorkFlow AI 助手。你可以问我关于工作记录的问题，例如：
+        <div class="chat-message bot">你好！我是 WorkFlow AI 工作记录助手（基于记忆检索和规则，未调用大模型）。你可以问我关于工作记录的问题，例如：
 - "这周做了多少工作？"
 - "最近的工作记录"
 - "总结一下我的工作"
@@ -254,7 +293,7 @@ async function sendChat() {
     container.scrollTop = container.scrollHeight;
 
     try {
-        const resp = await fetch(`${API_BASE}/api/chat`, {
+        const resp = await apiRequest(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ question, context_days: 30 })
@@ -262,7 +301,7 @@ async function sendChat() {
         const data = await resp.json();
 
         container.querySelector('.loading')?.remove();
-        container.innerHTML += `<div class="chat-message bot">${escapeHtml(data.answer)}</div>`;
+        container.innerHTML += `<div class="chat-message bot">${escapeHtml(data.answer)}<br><small>记忆依据：${escapeHtml(JSON.stringify(data.sources))}</small></div>`;
     } catch (err) {
         container.querySelector('.loading')?.remove();
         container.innerHTML += '<div class="chat-message bot">抱歉，查询失败。请确保后端服务正在运行。</div>';

@@ -5,3 +5,7 @@ data/
 *.db
 .venv/
 venv/
+
+.powercontext/
+.qa-browser/
+*.log.tmp

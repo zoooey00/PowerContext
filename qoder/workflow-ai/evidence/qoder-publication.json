@@ -1,0 +1,29 @@
+{
+  "source": "Qoder original MCP tool result",
+  "timestamp": "2026-11-05T08:35:10.233Z",
+  "session_id": "afd053ae-a951-4eb6-a886-44dddd96651e",
+  "message_uuid": "fd79db0b-0ee3-4c1a-9d7e-43fe76290f64",
+  "tool_call_id": "call_ac10da1bec944869931ba431",
+  "published": true,
+  "site": {
+    "hasPublishedContent": true,
+    "site_id": "01a1aad5-4bec-7af2-ab28-4e76e44d3d9a",
+    "project_id": "01a1aad5-4be8-7f1f-b178-4f9d5e267a05",
+    "lifecycle": "active",
+    "governance_status": "normal",
+    "access_mode": "public",
+    "host": "workflow-ai-h5uhif9j8sv.qoder.zone",
+    "subdomain_prefix": "workflow-ai",
+    "subdomain_suffix": "-h5uhif9j8sv.qoder.zone",
+    "auth_integration_status": "not_required",
+    "url": "https://workflow-ai-h5uhif9j8sv.qoder.zone"
+  },
+  "operation": {
+    "operation_id": "01a1aad8-7d50-7250-b4f9-4fbb97cb5cf0",
+    "state": "succeeded",
+    "committed": true,
+    "last_error_code": ""
+  },
+  "artifactReady": true,
+  "readiness": "publication_completed"
+}

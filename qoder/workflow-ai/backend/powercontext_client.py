@@ -1,114 +1,101 @@
-import httpx
-from backend.config import POWERCONTEXT_SERVER_URL, POWERCONTEXT_API_TOKEN, POWERCONTEXT_SCOPE_ID
+"""PowerContext HTTP adapter. No mock or local retrieval fallback."""
+import asyncio
 import json
-from datetime import datetime
+import httpx
+from backend.config import (
+    POWERCONTEXT_SERVER_URL, POWERCONTEXT_API_TOKEN, POWERCONTEXT_SCOPE_ID,
+    POWERCONTEXT_SCOPE_KEY, POWERCONTEXT_SEARCH_MODE,
+)
+
+MARKER = 'workflowlog '
+
+
+class PowerContextError(RuntimeError):
+    pass
 
 
 class PowerContextClient:
     def __init__(self):
-        self.base_url = POWERCONTEXT_SERVER_URL.rstrip("/")
-        self.token = POWERCONTEXT_API_TOKEN
+        self.base_url = POWERCONTEXT_SERVER_URL.rstrip('/')
         self.scope_id = POWERCONTEXT_SCOPE_ID
         self._client = None
+        self._lock = asyncio.Lock()
 
-    async def _get_client(self) -> httpx.AsyncClient:
+    async def _get_client(self):
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
-                base_url=self.base_url,
-                timeout=30.0,
-                headers={"Authorization": f"Bearer {self.token}"} if self.token else {}
+                base_url=self.base_url, timeout=15, trust_env=False,
+                headers={'Authorization': f'Bearer {POWERCONTEXT_API_TOKEN}'} if POWERCONTEXT_API_TOKEN else {},
             )
         return self._client
 
     async def close(self):
-        if self._client and not self._client.is_closed:
+        if self._client:
             await self._client.aclose()
 
-    async def health_check(self) -> dict:
-        client = await self._get_client()
+    async def post(self, path, payload):
         try:
-            resp = await client.get("/health/ready")
-            return {"status": "healthy" if resp.status_code == 200 else "unhealthy", "status_code": resp.status_code}
-        except Exception as e:
-            return {"status": "unreachable", "error": str(e)}
+            response = await (await self._get_client()).post(path, json=payload)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as error:
+            raise PowerContextError(f'PowerContext {path}: HTTP {error.response.status_code}') from error
+        except (httpx.HTTPError, ValueError) as error:
+            raise PowerContextError(f'PowerContext {path}: unavailable or invalid response') from error
 
-    async def remember(self, content: str, metadata: dict = None) -> dict:
-        client = await self._get_client()
-        payload = {
-            "scope_id": self.scope_id,
-            "content": content,
-        }
-        if metadata:
-            payload["metadata"] = metadata
+    async def ensure_scope(self):
+        async with self._lock:
+            if not self.scope_id:
+                result = await self.post('/v1/scopes', {
+                    'title': 'WorkFlow AI', 'summary': 'Personal work log memory',
+                    'idempotency_key': POWERCONTEXT_SCOPE_KEY,
+                })
+                self.scope_id = result['scope_id']
+        return self.scope_id
+
+    async def health_check(self):
         try:
-            resp = await client.post("/v1/memory/remember", json=payload)
-            if resp.status_code in (200, 201):
-                return {"success": True, "data": resp.json()}
-            return {"success": False, "error": f"HTTP {resp.status_code}: {resp.text}"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+            response = await (await self._get_client()).get('/health/ready')
+            response.raise_for_status()
+            await self.ensure_scope()
+            return {'status': 'healthy', 'scope_id': self.scope_id, 'search_mode': POWERCONTEXT_SEARCH_MODE}
+        except (httpx.HTTPError, PowerContextError, KeyError):
+            return {'status': 'unavailable'}
 
-    async def search_memory(self, query: str, limit: int = 10) -> dict:
-        client = await self._get_client()
-        payload = {
-            "scope_id": self.scope_id,
-            "query": query,
-            "limit": limit,
-        }
-        try:
-            resp = await client.post("/v1/memory/search", json=payload)
-            if resp.status_code == 200:
-                return {"success": True, "data": resp.json()}
-            return {"success": False, "error": f"HTTP {resp.status_code}: {resp.text}"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+    @staticmethod
+    def encode_log(log):
+        fields = {k: log[k] for k in ('id', 'title', 'content', 'category', 'tags', 'date')}
+        return MARKER + json.dumps(fields, ensure_ascii=False, separators=(',', ':'))
 
-    async def prepare_context(self, query: str, sections: list = None) -> dict:
-        client = await self._get_client()
-        payload = {
-            "scope_id": self.scope_id,
-            "query": query,
-        }
-        if sections:
-            payload["sections"] = sections
-        try:
-            resp = await client.post("/v1/context/prepare", json=payload)
-            if resp.status_code == 200:
-                return {"success": True, "data": resp.json()}
-            return {"success": False, "error": f"HTTP {resp.status_code}: {resp.text}"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+    async def store_work_log(self, log):
+        text = self.encode_log(log)
+        if len(text.encode('utf-8')) > 8192:
+            raise PowerContextError('工作日志超过 PowerContext 单条记忆 8192 UTF-8 字节限制')
+        data = await self.post('/v1/memory/remember', {
+            'scope_id': await self.ensure_scope(), 'kind': 'work_log', 'text': text,
+        })
+        records = data.get('records', [])
+        if not records or not records[0].get('artifact'):
+            raise PowerContextError('PowerContext did not return a memory artifact')
+        return records[0]
 
-    async def store_work_log_memory(self, log_id: int, title: str, content: str, category: str, tags: list, date: str):
-        memory_content = f"""工作日志 #{log_id}
-标题: {title}
-日期: {date}
-分类: {category}
-标签: {', '.join(tags) if tags else '无'}
-内容: {content}"""
-        metadata = {
-            "type": "work_log",
-            "log_id": str(log_id),
-            "category": category,
-            "date": date,
-            "tags": tags,
-        }
-        return await self.remember(memory_content, metadata)
+    async def search_work_logs(self, query, limit=10):
+        return await self.post('/v1/memory/search', {
+            'scope_id': await self.ensure_scope(), 'query': query,
+            'limit': min(limit, 50), 'mode': POWERCONTEXT_SEARCH_MODE,
+        })
 
-    async def search_work_logs(self, query: str, limit: int = 10):
-        return await self.search_memory(query, limit)
+    async def prepare_context(self, query):
+        return await self.post('/v1/context/prepare', {
+            'scope_id': await self.ensure_scope(), 'query': query, 'max_bytes': 8000,
+        })
 
-    async def build_weekly_context(self, logs: list[dict]) -> str:
-        if not logs:
-            return "本周暂无工作记录。"
-
-        context_parts = [f"以下是 {logs[0]['date']} 至 {logs[-1]['date']} 的工作记录汇总：\n"]
-        for log in logs:
-            tags_str = f" [{', '.join(log['tags'])}]" if log.get('tags') else ""
-            context_parts.append(
-                f"- [{log['date']}] [{log['category']}] {log['title']}{tags_str}\n  {log['content'][:200]}"
-            )
-        return "\n".join(context_parts)
+    async def forget(self, record):
+        return await self.post('/v1/atomic-memory/lifecycle', {
+            'scope_id': await self.ensure_scope(),
+            'target': {'artifact': record['artifact'], 'state_version': record['state_version']},
+            'state': 'forgotten',
+        })
 
 
 powercontext_client = PowerContextClient()

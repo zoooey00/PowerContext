@@ -1,210 +1,51 @@
-# WorkFlow AI 提交材料
+# Qoder 赛题提交材料
 
-## 一、项目网站网址
+## 可直接填写的字段
 
-（通过 Qoder Sites 发布后填写）
+| 平台字段 | 内容 |
+| --- | --- |
+| 项目名称 | WorkFlow AI — 可追溯的工作日志与周报助手 |
+| 作品链接 / 项目网站 | https://workflow-ai-h5uhif9j8sv.qoder.zone |
+| 代码仓库 | https://github.com/zoooey00/PowerContext |
+| Branch | 2026-competition-ecosystem |
+| Commit ID | 使用本次最终交付的完整 hash；检出该提交后 git rev-parse HEAD 获取。聊天最终交付和压缩包根目录 SUBMISSION_VALUES.txt 提供精确值 |
+| 项目目录 | qoder/workflow-ai/ |
+| Qoder 账号 UID | 01a17718-eab6-73d3-9f4b-5a6df25f7738 |
 
-## 二、代码仓库
+## 验收对应表
 
-https://github.com/zoooey00/PowerContext
+| 检查项 | 状态 | 证据 / 下一步 | 规则来源 |
+| --- | --- | --- | --- |
+| 指定基分支开发 | 已确认 | 官方分支 HEAD d647275c308e09b7b623f322a26f5c4e85734fb0；同仓库 compare 的 merge base 为该值，behind_by=0 | 题面开头 |
+| 对应 qoder 目录 | 已确认 | 本目录源码、证据与材料；本次提交只修改此项目 | 题面开头 |
+| 网站通过 Qoder Sites 发布 | 已确认 | evidence/qoder-publication.json 原始 MCP 回执，published=true | 2.3、3.1 |
+| 网站任何人可访问 | 已确认 | 原始 access_mode=public；evidence/site-public-check.json：独立匿名 Chrome，HTTP 200，附截图 | 2.3、3.1 |
+| 主功能运行 | 已确认自测 | evidence/integration.json，10 组检查；browser-check.json，6 组检查 | 3.1 |
+| 指定技术实际作用 | 已确认自测 | 真实 PowerContext 写入/召回引用、双服务重启持久性、周报与问答、编辑删除；没有 mock 或本地检索降级 | 2.2、3.1 |
+| 运行说明 | 已交付 | README.md、bootstrap.py、run.py、requirements.txt、.env.example | 第四部分 |
+| 验证样例 | 已交付 | VALIDATION.md，输入、步骤、预期、真实响应和日志 | 第四部分 |
+| Qoder 开发记录 | 已整理 | 两张用户原始截图、18 次文件写入的原任务日志摘录、消息 UUID 与文件哈希；见 QODER_RECORDS.md | 2.1、第四部分 |
+| Qoder UID | 已确认 | 用户提供文本与账号设置截图一致 | 第四部分 |
+| 网站补充展示页 | 待处理（改进项） | site-submission/index.html 已准备；在原 Qoder Sites 更新并再次发布可把真实截图、运行入口和验证说明放到首页。现有线上版本仍是原本地演示 | 2.3 |
+| 真实用户使用效果 | 不适用 | 尚未采集，不编造人数和提效百分比；工程自测不当作使用效果 | 2.4，鼓励项 |
+| 最终测评平台提交 | 待处理 | 登录比赛平台填写以上字段、上传材料并保存成功页面；代码上传不能代替提测 | 第五部分 |
 
-项目位于 `qoder/workflow-ai/` 目录
+已从本机原始 Qoder 日志核对到主要初始源码创建与网站发布。后续接口修复、真实联调与材料整理由 Codex 完成，未伪称为 Qoder 操作。赛事对“主要开发”的最终判断仍由评审依据原 Qoder 任务记录和 UID 核对。建议补充原会话编码、调试阶段的原生截图/录屏。
 
-## 三、Qoder 账号 UID
+## 建议上传的材料
 
-（请填写你的 Qoder 账号 UID）
+1. 本目录完整源码（也可直接给出上述仓库、分支和精确 commit）。
+2. README.md：环境、固定 PowerContext 来源、安装与双服务启动。
+3. VALIDATION.md：至少一组完整验证输入、预期和操作步骤。
+4. QODER_RECORDS.md 与 evidence/qoder-development.json、qoder-task-start.png、qoder-account.png。
+5. evidence/integration.json、services.log、browser-check.json 和应用截图。
+6. evidence/qoder-publication.json、site-public-check.json、site-public.png。
 
-## 四、运行说明
+所有样例为合成测试数据，证据不包含真实 API Key、密码或用户日志。环境文件、数据库与浏览器配置不打包。语雀补充页本次读取失败，以用户提供规则逐项整理，未假定读取了无法访问的正文。
 
-### 环境要求
+## 最后操作
 
-- Python 3.11+
-- PowerContext 1.5.0（可选，用于语义搜索增强）
-
-### 安装步骤
-
-1. 克隆仓库
-```bash
-git clone https://github.com/zoooey00/PowerContext.git
-cd PowerContext/qoder/workflow-ai
-```
-
-2. 安装依赖
-```bash
-pip install -r requirements.txt
-```
-
-3. 配置环境变量（可选）
-```bash
-cp .env.example .env
-# 编辑 .env 配置 PowerContext 连接信息
-```
-
-4. 启动服务
-```bash
-# Windows
-start.bat
-
-# Linux/Mac
-chmod +x start.sh
-./start.sh
-```
-
-5. 访问 http://localhost:8000
-
-### PowerContext 部署（可选）
-
-```bash
-# 安装 PowerContext
-uv tool install --force "powercontext[cli,server]==1.5.0"
-
-# 初始化配置
-powercontext config init --language zh --output .env
-
-# 启动服务
-powercontext server run --env-file .env
-```
-
-## 五、验证样例
-
-### 样例 1：创建工作日志并搜索
-
-**初始数据**：无
-
-**操作步骤**：
-1. 启动服务，访问 http://localhost:8000
-2. 点击「+ 新增日志」
-3. 填写：
-   - 标题：完成用户登录模块开发
-   - 内容：实现了 JWT 认证、OAuth2 集成、登录页面 UI
-   - 分类：开发
-   - 标签：后端, 认证, JWT
-   - 日期：今天
-4. 点击保存
-5. 切换到「语义搜索」标签
-6. 输入"认证相关的工作"
-7. 点击搜索
-
-**预期结果**：
-- 日志创建成功，显示在日志列表中
-- 搜索结果中找到刚才创建的日志
-
-**PowerContext 作用记录**：
-- 创建日志时，自动调用 `POST /v1/memory/remember` 存储到 PowerContext
-- 搜索时，调用 `POST /v1/memory/search` 进行语义匹配
-- 如 PowerContext 未运行，自动降级为本地关键词匹配
-
-### 样例 2：生成周报
-
-**初始数据**：创建 3-5 条不同日期的工作日志
-
-**操作步骤**：
-1. 创建多条工作日志（不同日期、不同分类）
-2. 切换到「周报生成」标签
-3. 选择日期范围（包含已创建日志的日期）
-4. 选择报告风格
-5. 点击「生成周报」
-
-**预期结果**：
-- 显示工作统计（记录数、活跃天数）
-- 显示摘要信息
-- 显示结构化周报内容
-
-**PowerContext 作用记录**：
-- 调用 `build_weekly_context` 汇总工作上下文
-- 如 PowerContext 未运行，使用本地数据生成
-
-### 样例 3：智能问答
-
-**初始数据**：已有若干工作日志
-
-**操作步骤**：
-1. 切换到「智能问答」标签
-2. 输入"这周做了多少工作？"
-3. 点击发送
-
-**预期结果**：
-- 返回工作统计信息
-
-**PowerContext 作用记录**：
-- 调用 `POST /v1/memory/search` 搜索相关工作记录
-- 结合本地规则引擎生成回答
-
-## 六、Qoder 开发记录
-
-### 开发环节说明
-
-1. **需求分析**（Qoder 完成）
-   - 分析比赛要求，确定项目方向
-   - 确定核心功能：工作日志管理、语义搜索、周报生成、智能问答
-
-2. **架构设计**（Qoder 完成）
-   - 设计前后端分离架构
-   - 确定技术栈：FastAPI + SQLite + PowerContext
-   - 设计数据库模型和 API 接口
-
-3. **后端开发**（Qoder 完成）
-   - 生成 FastAPI 主应用代码
-   - 实现数据模型和数据库操作
-   - 编写 PowerContext HTTP API 客户端
-   - 实现周报生成和智能问答逻辑
-
-4. **前端开发**（Qoder 完成）
-   - 生成响应式 HTML 页面
-   - 实现 CSS 样式和交互逻辑
-   - 实现四个功能模块的前端界面
-
-5. **测试调试**（Qoder 完成）
-   - 测试所有 API 端点
-   - 修复导入路径问题
-   - 验证前后端集成
-
-### Qoder 账号 UID
-
-（请填写你的 Qoder 账号 UID）
-
-## 七、技术结合说明
-
-### PowerContext 集成
-
-**使用方式**：HTTP API
-
-**核心功能**：
-1. **Memory 存储**：每条工作日志创建时，通过 `POST /v1/memory/remember` 存入 PowerContext，包含结构化元数据（分类、标签、日期）
-
-2. **语义搜索**：搜索时通过 `POST /v1/memory/search` 进行语义匹配，返回与查询语义最相关的工作记录
-
-3. **上下文准备**：生成周报时通过 `POST /v1/context/prepare` 汇总工作上下文
-
-**降级策略**：如 PowerContext 服务不可用，自动降级为本地关键词匹配，确保基本功能可用
-
-**代码位置**：
-- `backend/powercontext_client.py` - PowerContext API 客户端
-- `backend/main.py` - API 端点中调用 PowerContext
-
-## 八、项目结构
-
-```
-workflow-ai/
-├── backend/
-│   ├── main.py              # FastAPI 主应用
-│   ├── models.py            # 数据模型
-│   ├── database.py          # SQLite 数据库操作
-│   ├── powercontext_client.py  # PowerContext API 客户端
-│   ├── config.py            # 配置管理
-│   └── __init__.py
-├── frontend/
-│   ├── index.html           # 主页面
-│   ├── style.css            # 样式
-│   └── app.js               # 前端逻辑
-├── requirements.txt         # Python 依赖
-├── .env.example             # 环境变量示例
-├── .gitignore
-├── start.bat                # Windows 启动脚本
-├── start.sh                 # Linux/Mac 启动脚本
-└── README.md                # 项目说明
-```
-
-## 九、使用效果（鼓励提交）
-
-（如有真实用户使用，请在此补充使用数据）
+- 若更新展示页，在 Qoder 打开本项目，把原站点的网页目录更新为 site-submission，再次发布；保持「任何人都可访问」。不要新建替代站点或删除原站点。
+- 上传原生编码、调试截图（若平台要求独立截图附件，可在原 Qoder 任务中直接截取，与导出的消息 UUID 对应）。
+- 在测评平台填写最终 hash 与 Branch，上传材料，保存提交成功回执。
+- 评审结束前不要暂停或删除站点。

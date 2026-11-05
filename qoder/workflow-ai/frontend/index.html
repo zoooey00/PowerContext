@@ -14,11 +14,11 @@
                 <h1>WorkFlow AI</h1>
             </div>
             <p class="subtitle">智能工作日志与周报助手 · 基于 PowerContext</p>
-        </header>
+        </header><div id="memory-status" style="padding:12px;background:#eff6ff;border-radius:8px;margin-bottom:16px">正在检查 PowerContext...</div>
 
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="logs">📝 工作日志</button>
-            <button class="tab-btn" data-tab="search">🔍 语义搜索</button>
+            <button class="tab-btn" data-tab="search">🔍 记忆检索</button>
             <button class="tab-btn" data-tab="report">📊 周报生成</button>
             <button class="tab-btn" data-tab="chat">💬 智能问答</button>
         </nav>
@@ -48,10 +48,10 @@
 
             <section id="tab-search" class="tab-panel">
                 <div class="panel-header">
-                    <h2>语义搜索</h2>
+                    <h2>记忆检索</h2>
                 </div>
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="输入关键词或自然语言描述..." onkeypress="if(event.key==='Enter')doSearch()">
+                    <input type="text" id="search-input" placeholder="全文模式请搜索原文关键词，例如 JWT" onkeypress="if(event.key==='Enter')doSearch()">
                     <button class="btn btn-primary" onclick="doSearch()">搜索</button>
                 </div>
                 <div id="search-results" class="search-results"></div>

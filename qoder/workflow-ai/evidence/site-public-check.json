@@ -1,0 +1,11 @@
+{
+  "url": "https://workflow-ai-h5uhif9j8sv.qoder.zone/",
+  "title": "WorkFlow AI - 智能工作日志与周报助手",
+  "text": "📋\nWorkFlow AI\n\n智能工作日志与周报助手 · 基于 PowerContext\n\n💡 这是演示版本，数据存储在浏览器本地。完整版本支持 PowerContext 语义搜索和后端服务。 查看完整代码 →\n📝 工作日志\n🔍 语义搜索\n📊 周报生成\n💬 智能问答\n工作日志\n+ 新增日志\n全部分类\n开发\n会议\n研究\n文档\nBug修复\n评审\n其他\n研究 PowerContext 集成方案\n2026-11-05\n研究\n调研了 PowerContext 的 Memory 和 Search API，设计了工作日志的语义存储方案。完成了原型验证。\nPowerContextAI语义搜索\n删除\n编写 API 接口文档\n2026-11-05\n文档\n完成了所有 REST API 的文档编写，包括请求/响应格式、错误码说明和使用示例。\n文档API\n删除\n参加产品需求评审会\n2026-11-04\n会议\n讨论了 Q3 产品路线图，确定了三个优先级最高的功能需求。负责用户权限模块的设计。\n产品需求\n删除\n完成用户登录模块开发\n2026-11-03\n开发\n实现了 JWT 认证、OAuth2 集成、登录页面 UI 开发。修复了 token 过期刷新的问题。\n后端认证JWT\n删除\n修复前端页面兼容性问题\n2026-11-02\nBug修复\n解决了 Safari 浏览器下的样式显示问题，优化了移动端响应式布局。\n前端兼容性\n删除",
+  "localStorageDemo": true,
+  "status": 200,
+  "navigationError": null,
+  "anonymousProfile": true,
+  "checked_at": "2026-11-05T12:08:18.207Z",
+  "passed": true
+}
