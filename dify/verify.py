@@ -17,7 +17,7 @@ ROOT = Path(__file__).parent
 
 
 def post(path, body, token):
-    req = Request('http://127.0.0.1:8099' + path, json.dumps(body, ensure_ascii=False).encode(),
+    req = Request('http://127.0.0.1:8101' + path, json.dumps(body, ensure_ascii=False).encode(),
                   {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token})
     with urlopen(req, timeout=60) as r:
         return json.load(r)
@@ -45,11 +45,12 @@ def main():
     env = os.environ.copy()
     token = uuid.uuid4().hex
     env['SHOP_TOKEN'] = token
-    env['POWERCONTEXT_URL'] = 'http://127.0.0.1:8000'
-    env['POWERCONTEXT_SERVER_HTTP_PORT'] = '8000'
+    env['SHOP_PORT'] = '8101'
+    env['POWERCONTEXT_URL'] = 'http://127.0.0.1:8011'
+    env['POWERCONTEXT_SERVER_HTTP_PORT'] = '8011'
     env['POWERCONTEXT_SERVER_MCP_ENABLED'] = 'false'
     records = {'tested_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
-               'scope': 'real PowerContext HTTP + gateway; deterministic test replies; no Dify or LLM execution',
+               'scope': 'real PowerContext HTTP + generic adapter; exact Dify code functions executed locally; no hosted Dify or LLM execution',
                'environment': {'python': platform.python_version(), 'os': platform.platform(),
                                'powercontext_distribution': importlib.metadata.version('powercontext'),
                                'powercontext_source': json.loads(importlib.metadata.distribution('powercontext').read_text('direct_url.json'))}, 'steps': []}
@@ -63,55 +64,53 @@ def main():
                 cli = str(Path(sys.executable).parent / ('powercontext.exe' if os.name == 'nt' else 'powercontext'))
                 p = subprocess.Popen([cli, 'server', 'run'], env=env, cwd=folder, stdout=logs, stderr=logs)
                 processes.append(p)
-                wait('http://127.0.0.1:8000/health/live', p)
+                wait('http://127.0.0.1:8011/health/live', p)
                 return p
             pc = start_pc()
             shop = subprocess.Popen([sys.executable, str(ROOT / 'server.py')], env=env, stdout=logs, stderr=logs)
             processes.append(shop)
-            wait('http://127.0.0.1:8099/health', shop)
-            def prepare(action, item, user='judge-a', player='月亮来客'):
-                payload = {'user': user, 'player': player, 'action': action, 'item': item, 'request_id': uuid.uuid4().hex}
-                r = post('/prepare', payload, token)
-                records['steps'].append({'prepare_input': payload, 'prepare_result': {k:v for k,v in r.items() if k != 'ticket'}})
-                return r
-            def save(prepared, reply):
-                r = post('/commit', {'ticket': prepared['ticket'], 'reply': reply}, token)
-                records['steps'].append({'test_reply': reply, 'commit_result': r})
-                return r
-            a = prepare('prank', '会打嗝的月亮')
-            assert a['before']['turn'] == 0 and a['memory_count'] == 0
-            first = save(a, '测试台词：阿扣被会打嗝的月亮喷了一脸星星。')
-            assert first['state']['suspicion'] == 2 and first['state']['price'] == 7
-            duplicate = save(a, '重复台词不应覆盖')
-            assert duplicate['duplicate'] and duplicate['reply'] == first['reply']
-            # Restart the actual PowerContext process: persistence cannot come from gateway RAM.
-            pc.terminate()
-            pc.wait(timeout=20)
-            pc = start_pc()
-            b = prepare('trade', '一双失眠的拖鞋')
-            assert '会打嗝的月亮' in b['memories'] and b['before']['price'] == 7
-            assert b['memory_ref']
-            other = prepare('look', '看看柜台', user='judge-b')
-            assert other['memory_count'] == 0 and other['before']['price'] == 3
-            fork = prepare('look', '另一张同时打开的标签页')
-            save(b, '测试台词：月亮来客，又是你！拖鞋需要七枚纽扣。')
+            wait('http://127.0.0.1:8101/health', shop)
+            from game_nodes import input_node, settle_node, render_node, receipt_node
+            code = uuid.uuid4().hex
+            def turn(query, secret=code):
+                cmd = input_node('验收存档', secret, query, uuid.uuid4().hex)
+                read = post('/memory/read', json.loads(cmd['body']), token)
+                result = settle_node(json.dumps(read), 200, cmd['command'])
+                return read, result
+            read, result = turn('恶作剧：会打嗝的月亮')
+            assert result['allowed'] == 'yes'
+            rendered = render_node(result['ticket'], result['event'], result['history'], '{"tone":"astonished"}')
+            first = post('/memory/append', json.loads(rendered['body']), token)
+            assert first['saved']
+            assert post('/memory/append', json.loads(rendered['body']), token)['duplicate']
+            pc.terminate(); pc.wait(timeout=20); pc = start_pc()
+            read, result = turn('交换：一双失眠的拖鞋')
+            assert '会打嗝的月亮' in result['history']
+            assert json.loads(result['event'])['after']['price'] == 7
+            r = render_node(result['ticket'], result['event'], result['history'], '拿拖鞋换走月亮')
+            assert r['model_guard'] == 'fallback' and '拿拖鞋换走月亮' not in r['answer']
+            post('/memory/append', json.loads(r['body']), token)
+            _, other = turn('看看：柜台', uuid.uuid4().hex)
+            assert json.loads(other['before'])['turn'] == 0
+            _, result = turn('道歉：薄荷糖')
+            r = render_node(result['ticket'], result['event'], result['history'], '{"tone":"soft"}')
+            assert '实际换得：失眠计数器' in r['answer']
+            saved = post('/memory/append', json.loads(r['body']), token)
+            receipt = receipt_node(json.dumps(saved), 200, r['answer'])
+            assert '交换价 5 枚纽扣' in receipt['answer']
+            records['steps'] = [{'recall_records': read['records'], 'rendered_result': r['answer'], 'readback_refs': saved['references']}]
+            # 使用 Dify 节点本身的函数源码测试上限和双向钳位，网关不参与结算。
+            history = [{'turn':i+1,'action':'prank','item':'道具','exchange':None} for i in range(20)]
+            limited = settle_node(json.dumps({'records':history,'ticket':'test'}),200,'{"action":"look","item":"柜台"}')
+            assert limited['allowed'] == 'no' and json.loads(limited['before'])['suspicion'] == 5
+            for row in history: row['action'] = 'apologize'
+            limited = settle_node(json.dumps({'records':history,'ticket':'test'}),200,'{"action":"look","item":"柜台"}')
+            assert json.loads(limited['before'])['suspicion'] == 0
             try:
-                save(fork, '过期回合')
-                raise AssertionError('应拒绝冲突回合')
-            except HTTPError as error:
-                assert error.code == 400
-                records['steps'].append({'stale_turn_rejected': error.code})
-            c = prepare('apologize', '带一颗薄荷糖来赔礼')
-            final = save(c, '测试台词：看在薄荷糖的份上，下回少收两枚纽扣。')
-            assert final['state']['suspicion'] == 1 and final['state']['price'] == 5
-            try:
-                post('/prepare', {'action': 'look'}, 'incorrect')
-                raise AssertionError('未鉴权请求应拒绝')
-            except HTTPError as error:
-                assert error.code == 401
-            records['checks'] = ['empty archive', 'real memory write/readback', 'duplicate commit',
-                'PowerContext process restart persistence', 'recall changes price', 'player isolation',
-                'stale turn rejected', 'apology lowers price', 'unauthorized request rejected']
+                post('/memory/read', {}, 'wrong')
+                raise AssertionError('鉴权失效')
+            except HTTPError as error: assert error.code == 401
+            records['checks'] = ['actual PowerContext write/readback', 'restart persistence', 'duplicate idempotency', 'secret archive isolation', 'Dify code state replay', 'Dify code 20-turn gate', 'Dify code clamps', 'untrusted model output fallback', 'exact exchange ledger', 'gateway authentication']
             records['passed'] = True
             out.write_text(json.dumps(records, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
             print(json.dumps({'passed': True, 'checks': records['checks'], 'evidence': str(out)}, ensure_ascii=False))

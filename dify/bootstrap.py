@@ -14,4 +14,5 @@ env = os.environ.copy()
 # GitHub ZIP 不含 git 元数据；源码身份由 URL 中的不可变 commit 锁定。
 env['SETUPTOOLS_SCM_PRETEND_VERSION'] = '0.1.0'
 subprocess.run([str(python), '-m', 'pip', 'install', '-r', str(root / 'requirements-lock.txt')], env=env, check=True)
-print('安装完成。复制 .env.example 为 .env，设置 SHOP_TOKEN，然后运行 .venv 的 python run.py。')
+subprocess.run([str(python), str(root / 'configure.py')], check=True)
+print('安装及本机密钥生成完成。使用虚拟环境的 python run.py 启动。')

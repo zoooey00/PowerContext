@@ -13,16 +13,20 @@ url = os.environ.get('DIFY_API_URL', 'http://localhost/v1').rstrip('/')
 key = os.environ['DIFY_APP_API_KEY']
 user = 'judge-' + uuid.uuid4().hex
 rows = []
+save_code = uuid.uuid4().hex
 for query, price, turn in [('恶作剧：会打嗝的月亮', 7, 1), ('交换：一双失眠的拖鞋', 7, 2), ('道歉：一颗薄荷糖', 5, 3)]:
     # 每轮新会话，使用相同 end-user 与 player；不依赖 Dify 的聊天历史。
-    payload = {'inputs': {'player': '月亮来客'}, 'query': query, 'response_mode': 'blocking', 'user': user}
+    payload = {'inputs': {'player': '月亮来客', 'save_code': save_code}, 'query': query, 'response_mode': 'blocking', 'user': user}
     request = Request(url + '/chat-messages', json.dumps(payload, ensure_ascii=False).encode(),
                       {'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
     with urlopen(request, timeout=180) as response:
         result = json.load(response)
     answer = result.get('answer', '')
     assert f'第 {turn} 回合' in answer and f'交换价 {price} 枚纽扣' in answer and '记忆已保存' in answer, result
-    rows.append({'input': payload, 'result': result})
+    assert '拿拖鞋换走月亮' not in answer
+    public_payload = {**payload, 'inputs': {'player': '月亮来客', 'save_code': '[REDACTED]'}}
+    rows.append({'input': public_payload, 'result': result})
+assert '实际换得：失眠计数器' in rows[2]['result']['answer']
 assert len({r['result']['conversation_id'] for r in rows}) == 3
 assert '月亮' in rows[1]['result']['answer'], '第二回合模型未回扣月亮，请检查召回上下文和模型表现'
 out = Path(__file__).parent / 'evidence' / 'dify-live.json'

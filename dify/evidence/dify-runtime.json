@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-05T11:24:20.652Z",
+  "checked_at": "2026-11-06T02:22:47.936Z",
   "provider": "langgenius/deepseek/deepseek",
   "model_status": [
     {
@@ -20,11 +20,11 @@
     }
   ],
   "published_workflow": {
-    "id": "5c0f0e25-e90c-40b6-b4d6-73df45814c92",
+    "id": "42ab970c-d4a4-43af-bd8b-2dc517c988fb",
     "created_by": "6c4da0ac-d66a-4ea6-bce6-43ee5317241f",
-    "created_at": 1793871319,
+    "created_at": 1793931388,
     "updated_by": null,
-    "updated_at": 1793871319
+    "updated_at": 1793931388
   },
   "enable_site": true,
   "enable_api": true,

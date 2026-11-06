@@ -1,129 +1,132 @@
 {
-  "tested_at": "2026-11-05T17:36:15+0800",
+  "tested_at": "2026-11-06T10:16:46+0800",
   "passed": true,
   "scope": "real Dify published Chatflow API; real provider LLM; 3 distinct conversations",
   "runs": [
     {
       "input": {
         "inputs": {
-          "player": "月亮来客"
+          "player": "月亮来客",
+          "save_code": "[REDACTED]"
         },
         "query": "恶作剧：会打嗝的月亮",
         "response_mode": "blocking",
-        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+        "user": "judge-bc8ca71844654abe9b19da4ee07997d2"
       },
       "result": {
         "event": "message",
-        "task_id": "fb69c0a0-69e2-4655-aae3-7699dfc0cb5e",
-        "id": "0cff7b2a-5527-4e54-a01e-8318b6115a62",
-        "message_id": "0cff7b2a-5527-4e54-a01e-8318b6115a62",
-        "conversation_id": "b8aedaec-6804-4aa1-a29c-15bfdbebff18",
+        "task_id": "2b505df4-5ca3-40de-ad19-96ccd6507943",
+        "id": "4e4a9575-a9ac-4d59-aa42-3ed766c37763",
+        "message_id": "4e4a9575-a9ac-4d59-aa42-3ed766c37763",
+        "conversation_id": "794fbd2b-b192-4852-aa14-80cf5b7d88ce",
         "mode": "advanced-chat",
-        "answer": "哎哟，新面孔！阿扣我正拿鸡毛掸子给纸箱棱角打光呢，你就摸进来啦。听说你带了枚“会打嗝的月亮”？我这儿纽扣都竖起来看热闹了——月亮一打嗝，准把柜台震得叮当响，算你有点胆量。价钱嘛，从3跳到7，熟客价，别瞪我。不过你这一手小恶作剧，我记你一格疑心，2点，不冤。放心，我不赶人，只把最圆的纽扣先收进铁盒。来，下回合你是想挑颗会装傻的纽扣赔罪，还是再掏件怪货让我开开眼？\n\n---\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "answer": "阿扣的纸箱盖弹了起来：“好家伙，今天柜台又要加固了！”\n\n【本轮事件】\n你用 \"会打嗝的月亮\" 恶作剧。阿扣启动了柜台防恶作剧铃。本轮没有发生物品交换。\n\n【历史账本：只读】\n首次进店，没有历史。\n\n第 1 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n下回可以发送「交换：怪物品」「道歉：礼物」或「恶作剧：道具」。\n记忆已保存，下次进入同一存档仍有效。",
         "metadata": {
           "annotation_reply": null,
           "retriever_resources": [],
           "usage": {
-            "prompt_tokens": 295,
+            "prompt_tokens": 83,
             "prompt_unit_price": "0",
             "prompt_price_unit": "0",
             "prompt_price": "0",
-            "completion_tokens": 158,
+            "completion_tokens": 7,
             "completion_unit_price": "0",
             "completion_price_unit": "0",
             "completion_price": "0",
-            "total_tokens": 453,
+            "total_tokens": 90,
             "total_price": "0",
             "currency": "USD",
-            "latency": 2.086,
-            "time_to_first_token": 5.99,
+            "latency": 1.207,
+            "time_to_first_token": 3.334,
             "time_to_generate": 0.0
           },
           "reasoning": {}
         },
-        "created_at": 1793871357
+        "created_at": 1793931397
       }
     },
     {
       "input": {
         "inputs": {
-          "player": "月亮来客"
+          "player": "月亮来客",
+          "save_code": "[REDACTED]"
         },
         "query": "交换：一双失眠的拖鞋",
         "response_mode": "blocking",
-        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+        "user": "judge-bc8ca71844654abe9b19da4ee07997d2"
       },
       "result": {
         "event": "message",
-        "task_id": "bf5a1b48-70be-417b-b3a1-8fb3700c25e0",
-        "id": "4d218404-e34c-4d52-bd48-a4b3aa11984d",
-        "message_id": "4d218404-e34c-4d52-bd48-a4b3aa11984d",
-        "conversation_id": "50a62a61-757e-4aa7-9379-2cb46285cb42",
+        "task_id": "ddd7a095-a6d6-416a-a72d-1ffd874fa162",
+        "id": "4c67a9ab-0600-41aa-9b6a-a237edfe6f31",
+        "message_id": "4c67a9ab-0600-41aa-9b6a-a237edfe6f31",
+        "conversation_id": "11477b9f-24c7-42c8-a96d-eaea81e7feff",
         "mode": "advanced-chat",
-        "answer": "哟，熟客来了。第1回合你拿“会打嗝的月亮”来闹我，我还没忘呢，这回又揣着“一双失眠的拖鞋”来交换？行，阿扣给你摆出镇店奇货：一颗只会半夜数自己影子的纽扣，外加一张越叠越薄的纸箱名片。分数不变，价钱照旧，收据系统随后会亮出来，别听拖鞋打哈欠就往我账上赖。想换就挑一件，想闹就接着来。\n建议：1. 先挑那颗数影子的纽扣，看看它半夜数到几；2. 把失眠拖鞋翻过来，找找鞋底有没有藏小纸条。\n\n---\n第 2 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "answer": "阿扣敲了敲纽扣罐：“规矩贴在这里，纸箱精也有原则！”\n\n【本轮事件】\n本次交换：你交出 \"一双失眠的拖鞋\"，换得「失眠计数器」。其他历史道具不参与这次交换。\n\n【历史账本：只读】\n第 1 回合｜恶作剧道具：\"会打嗝的月亮\"\n\n第 2 回合 · 警惕 2/5 · 交换价 7 枚纽扣 · 熟客\n下回可以发送「交换：怪物品」「道歉：礼物」或「恶作剧：道具」。\n记忆已保存，下次进入同一存档仍有效。",
         "metadata": {
           "annotation_reply": null,
           "retriever_resources": [],
           "usage": {
-            "prompt_tokens": 290,
+            "prompt_tokens": 82,
             "prompt_unit_price": "0",
             "prompt_price_unit": "0",
             "prompt_price": "0",
-            "completion_tokens": 151,
+            "completion_tokens": 6,
             "completion_unit_price": "0",
             "completion_price_unit": "0",
             "completion_price": "0",
-            "total_tokens": 441,
+            "total_tokens": 88,
             "total_price": "0",
             "currency": "USD",
-            "latency": 2.216,
-            "time_to_first_token": 4.835,
+            "latency": 0.832,
+            "time_to_first_token": 2.203,
             "time_to_generate": 0.0
           },
           "reasoning": {}
         },
-        "created_at": 1793871364
+        "created_at": 1793931401
       }
     },
     {
       "input": {
         "inputs": {
-          "player": "月亮来客"
+          "player": "月亮来客",
+          "save_code": "[REDACTED]"
         },
         "query": "道歉：一颗薄荷糖",
         "response_mode": "blocking",
-        "user": "judge-9a63d2b7f9e04552a5016dda2587b842"
+        "user": "judge-bc8ca71844654abe9b19da4ee07997d2"
       },
       "result": {
         "event": "message",
-        "task_id": "ff9f9a6b-3956-47a4-a633-27fccd7f537b",
-        "id": "ffd52b3e-37c1-4c4e-b9a8-69a0b36d2f57",
-        "message_id": "ffd52b3e-37c1-4c4e-b9a8-69a0b36d2f57",
-        "conversation_id": "efc95e6e-ace9-41e2-a459-89b186a65339",
+        "task_id": "e58f3543-cb74-4037-a2d0-7b7e7ff890db",
+        "id": "80e57592-ab7a-4247-8a79-a9e79c4d12fa",
+        "message_id": "80e57592-ab7a-4247-8a79-a9e79c4d12fa",
+        "conversation_id": "bfcabe51-108e-4987-ae30-4f8b82ed49ee",
         "mode": "advanced-chat",
-        "answer": "哟，熟客回来了。上回你拿“一双失眠的拖鞋”换走我的“会打嗝的月亮”，今晚倒是揣着颗薄荷糖来道歉？糖我收下，嘴硬归嘴硬，气也消一半。不过别以为一颗糖就能把月亮那声嗝抹平，我还记着呢。看在你认错的份上，这回不涨你价，熟客价照旧五枚纽扣。下回合想继续赔礼，还是再翻翻我这儿的怪货？\n\n---\n第 3 回合 · 警惕 1/5 · 交换价 5 枚纽扣 · 熟客\n记忆已保存，下次进入同一存档仍有效。",
+        "answer": "阿扣把纽扣罐往身后藏：“哼，算你有点诚意。”\n\n【本轮事件】\n你带来 \"一颗薄荷糖\" 赔礼，阿扣收下道歉，警惕降低。本轮没有发生物品交换。\n\n【历史账本：只读】\n第 1 回合｜恶作剧道具：\"会打嗝的月亮\"\n第 2 回合｜交换报价物品：\"一双失眠的拖鞋\"；实际换得：失眠计数器\n\n第 3 回合 · 警惕 1/5 · 交换价 5 枚纽扣 · 熟客\n下回可以发送「交换：怪物品」「道歉：礼物」或「恶作剧：道具」。\n记忆已保存，下次进入同一存档仍有效。",
         "metadata": {
           "annotation_reply": null,
           "retriever_resources": [],
           "usage": {
-            "prompt_tokens": 299,
+            "prompt_tokens": 84,
             "prompt_unit_price": "0",
             "prompt_price_unit": "0",
             "prompt_price": "0",
-            "completion_tokens": 111,
+            "completion_tokens": 6,
             "completion_unit_price": "0",
             "completion_price_unit": "0",
             "completion_price": "0",
-            "total_tokens": 410,
+            "total_tokens": 90,
             "total_price": "0",
             "currency": "USD",
-            "latency": 2.278,
-            "time_to_first_token": 5.151,
+            "latency": 0.995,
+            "time_to_first_token": 2.637,
             "time_to_generate": 0.0
           },
           "reasoning": {}
         },
-        "created_at": 1793871370
+        "created_at": 1793931404
       }
     }
   ]
